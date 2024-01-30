@@ -11,7 +11,7 @@ class Account extends React.Component {
     return (
       <View style={styles.container}>
         <ScrollView style={styles.container}>
-<CheckData/>
+{/* <CheckData/> */}
         <Dashboard />
         <Orders/>
         <Profile/>

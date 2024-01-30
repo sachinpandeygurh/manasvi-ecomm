@@ -59,8 +59,9 @@ const ProductDetails = ( ) => {
     fetchData();
   }, [route.params.slug]);
 
-  const getProductAllPhoto = async (productId) => {
+  const getProductAllPhoto = async () => {
     try {
+        console.log("");
       const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/product-allphoto/${productId}`);
       console.log("data",data);
       if (data) {

@@ -59,7 +59,7 @@ const Orders = () => {
       });
       localStorage.removeItem("cart");
       setCart([]);
-      navigation.navigate('/dashboard/user/orders');
+    //   navigation.navigate('/dashboard/user/orders');
       showToast("Order Placed Successfully!");
     } else {
       showToast("Incorrect OTP entered.");

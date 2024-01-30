@@ -36,7 +36,6 @@ const Category = () => {
     }
   };
 
-
   return (
     <View style={styles.container}>
       <Text style={styles.customText}>Categories</Text>
