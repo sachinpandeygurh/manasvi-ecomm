@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 // import Cart from '../../components/Cart';
 import Footer from '../../components/Footer';
 import Orders from '../../components/Orders';
+import Cart from '../../components/Cart';
 
 const cart = () => {
  
@@ -10,9 +11,8 @@ const cart = () => {
   return (
     <View style={styles.container}>
         <ScrollView>
-
-      {/* <Cart/> */}
-      <Orders/>
+      <Cart/>
+      {/* <Orders/> */}
         </ScrollView>
         <Footer/>
     </View>

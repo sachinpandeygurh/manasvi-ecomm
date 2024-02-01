@@ -10,14 +10,15 @@ import {
 } from "react-native";
 import axios from "axios";
 import { useNavigation } from '@react-navigation/native';
-import { router } from "expo-router";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-
+  const [CartAdded, setCartAdded] = useState(false);
+  const [cartAddedMap, setCartAddedMap] = useState({});
   // Get all products
   const getAllProducts = async () => {
     try {
@@ -36,7 +37,8 @@ const Products = () => {
   useEffect(() => {
     getAllProducts();
     getTotal();
-  }, [page]);
+    handleAddCart()
+  }, [page, cartAddedMap]);
 
   // Get total count
   const getTotal = async () => {
@@ -64,19 +66,63 @@ const Products = () => {
       setLoading(false);
     }
   };
-  console.log("products ", products );
   const navigation = useNavigation();
-  const handleProductDetails =(productId)=>{
+  const handleProductDetails =(productId,  categoryId)=>{
     // console.log("handleProductDetails", productId);
     try {
       navigation.navigate('aboutproduct', {
-        id: productId
+        id: productId,
+        categoryId
       });
     } catch (error) {
       console.error("Error during navigation:", error);
     }
     // await 
   }
+  const handleAddCart = async (
+    product_id,
+    productid,
+    productname,
+    slug,
+    description,
+    feature,
+    price,
+    baseCategory
+  ) => {
+    if (cartAddedMap[product_id]) {
+      // If the item is already added, do nothing
+      return;
+    }
+  
+    try {
+      const cartString = await AsyncStorage.getItem('@cart');
+      const cart = cartString ? JSON.parse(cartString) : [];
+      const selectedProduct = {
+        product_id, 
+        productname,
+        slug,
+        description,
+        feature,
+        price,
+        discount ,
+        quentity
+      };
+  
+      const updatedCart = [...cart, selectedProduct];
+      await AsyncStorage.setItem('@cart', JSON.stringify(updatedCart));
+  
+      console.log('Item added to cart successfully!');
+      
+      // Update the cartAddedMap to mark the current product as added
+      setCartAddedMap((prevMap) => ({
+        ...prevMap,
+        [product_id]: true,
+      }));
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+    }
+  };
+  
   return (
     <View>
       <ScrollView>
@@ -107,7 +153,7 @@ const Products = () => {
             {products?.map((p) => (
               <TouchableOpacity 
                 key={p._id}
-                onPress={() => handleProductDetails(p._id)}
+                onPress={() => handleProductDetails(p._id, p.category)}
                 style={styles.productContainer}
               >
                 <View style={styles.imageContainer}>
@@ -121,83 +167,53 @@ const Products = () => {
                 </View>
                 <ScrollView style={styles.productDetails}>
                   <Text style={styles.productName}>{p.name}</Text>
-                  {/* <Text style={styles.productDescription}>
-                    {p.description.substring(0, 30)}
-                  </Text> */}
+              
                   <View style={styles.detailRow}>
                 
                     <Text style={{color:"gray", textDecorationLine: "line-through"}}>{Math.floor(p.price * (100/(100-p.discount)))}</Text>
                     <Text style={styles.Price}>&#x20B9; {p.price}</Text>
                   </View>
-                  {/* {p.quantity ? (
-                    <View style={styles.detailRow}>
-                      <Text>Quantity:</Text>
-                      <Text style={styles.detailValue}>{p.quantity}</Text>
-                    </View>
-                  ) : (
-                    ""
-                  )} */}
-
                   <View style={styles.detailRow}>
              
                     <Text style={styles.detailValue}>
                       {p.discount ? p.discount : "0"}% OFF
                     </Text>
                   </View>
-
-                  {/* {p.color ? (
-                    <View style={styles.detailRow}>
-                      <Text>Color: </Text>
-                      <Text style={styles.detailValue}>{p.color}</Text>
-                    </View>
-                  ) : (
-                    ""
-                  )} */}
-                  {/* <View style={styles.detailRow}>
-                    <Text  style={{color:"blue", }}>Variants:</Text>
-                    <Text style={{color:"blue", }}>
-                      {p?.pricedata? p?.pricedata?.length : "not avilable"}
-                    </Text>
-                  </View> */}
-                  {/* <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Text>Brand:</Text>
-                    <Text style={styles.detailValue}>{p.brand}</Text>
-                  </View> */}
-
                   {/* Display other product details as needed */}
                 </ScrollView>
                 <Pressable
-                  style={{
-                    padding: 10,
-                    backgroundColor: "white",
-                    borderWidth: .5,
-                    borderColor: "blue",
-                    borderRadius: 5,
-                    width: "80%",
-                    marginHorizontal:"10%",
-                    marginBottom:20
-                  }}
-                  onPress={() => {
-
-                    // TODO: Add functionality for add to cart
-                  }}
-                >
-                  <Text
-                    style={{
-                      textAlign: "center",
-                      color: "blue",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Add to Cart
-                  </Text>
-                </Pressable>
+            style={{
+              padding: 10,
+              backgroundColor: cartAddedMap[p._id] ? "green" : "white",
+              borderWidth: 0.5,
+              borderColor: cartAddedMap[p._id] ? "" : "blue",
+              borderRadius: 5,
+              width: "80%",
+              marginHorizontal: "10%",
+              marginBottom: 20
+            }}
+            onPress={() => handleAddCart(
+              p._id ,
+              productname=p.name,
+              category=p.slug,
+              p.description,
+              p.feature,
+              p.price,
+              discount=p?.discount ,
+              quentity=1
+              )}
+            disabled={cartAddedMap[p._id]} 
+          >
+            <Text
+              style={{
+                textAlign: "center",
+                color: cartAddedMap[p._id] ? "white" : "blue",
+                fontWeight: "bold",
+              }}
+            >
+              {cartAddedMap[p._id] ? "View details" : "Add to Cart"}
+            </Text>
+          </Pressable>
               </TouchableOpacity>
             ))}
           </View>

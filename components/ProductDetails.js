@@ -18,6 +18,8 @@ const ProductDetails = ( ) => {
 
   const route = useRoute();
   const productId = route?.params?.id;
+  const categoryId = route?.params?.categoryId;
+  console.log("categoryId", categoryId);
   const handleQuantityChange = (value) => {
     setSelectedQuantity(value);
   };
@@ -72,7 +74,7 @@ const ProductDetails = ( ) => {
     }
   };
 
-  const getSimilarProduct = async (productId, categoryId) => {
+  const getSimilarProduct = async () => {
     try {
       const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/related-product/${productId}/${categoryId}`);
       setRelatedProducts(data?.products);
@@ -112,7 +114,8 @@ const ProductDetails = ( ) => {
       setNPrice(selectedSize.price);
     }
   }, [selectedSize]);
-console.log("productPhotos", productPhotos);
+  console.log("productPhotos", productPhotos);
+  console.log("categoryId", categoryId);
   return (
     <>
       <ScrollView>

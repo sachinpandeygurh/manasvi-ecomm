@@ -34,22 +34,57 @@ _removeData = async () => {
     console.log(error);
   }
 };
+_removeCart = async () => {
+  try {
+    await AsyncStorage.removeItem('@cart');
+    console.log('Data removed successfully!');
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export default function checkData() {
   return (
-    <View>
-      <Text>Login</Text>
-      <TouchableOpacity onPress={_storeData}>
-        <Text>Set data in AsyncStorage</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={_retrieveData}>
-        <Text>Get data from AsyncStorage</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={_removeData}>
-        <Text>Remove/delete data from AsyncStorage</Text>
-      </TouchableOpacity>
-    </View>
+    <View style={styles.container}>
+    <Text style={styles.heading}>Login</Text>
+    <TouchableOpacity style={styles.button} onPress={_storeData}>
+      <Text style={styles.buttonText}>Set data in AsyncStorage</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.button} onPress={_retrieveData}>
+      <Text style={styles.buttonText}>Get data from AsyncStorage</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.button} onPress={_removeData}>
+      <Text style={styles.buttonText}>Remove/delete data from AsyncStorage</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.button} onPress={_removeCart}>
+      <Text style={styles.buttonText}>Remove/delete data from Cart</Text>
+    </TouchableOpacity>
+  </View>
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#3498db',
+    padding: 15,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
