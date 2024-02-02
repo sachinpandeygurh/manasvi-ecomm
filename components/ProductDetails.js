@@ -1,28 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import {Picker} from '@react-native-picker/picker' 
+import { View, Text, Image, ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from "expo-router";
 import axios from 'axios';
-// import Toast from 'react-native-Toast-message';
+import { Pressable } from 'react-native';
 
-const ProductDetails = ( ) => {
+const ProductDetails = () => {
+  const router = useRouter();
   const navigation = useNavigation();
+  const route = useRoute();
+
   const [cart, setCart] = useState([]);
   const [product, setProduct] = useState({});
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [productPhotos, setProductPhotos] = useState([]);
   const [siPi, setSiPi] = useState([]);
   const [unit, setUnit] = useState('');
-  const [selectedQuantity, setSelectedQuantity] = useState(siPi[1]?.quantity);
+  const [selectedQuantity, setSelectedQuantity] = useState('');
   const [nprice, setNPrice] = useState('');
+  const [cartAddedMap, setCartAddedMap] = useState({});
 
-  const route = useRoute();
-  const productId = route?.params?.id;
-  const categoryId = route?.params?.categoryId;
-  console.log("categoryId", categoryId);
-  const handleQuantityChange = (value) => {
-    setSelectedQuantity(value);
-  };
+  // i write this way because it is work on this way
+  const {
+    productId = productId.productId,
+    productName = productId.productName,
+    productSlug = productId.productSlug,
+    productDescription = productId.productDescription,
+    productFeature = productId.productFeature,
+    productPrice = productId.productPrice,
+    productDiscount = productId.productDiscount,
+    quantity = productId.quantity,
+    pricedata = productId.pricedata,
+  } = route.params;
+  console.log("productId", productId);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,11 +74,20 @@ const ProductDetails = ( ) => {
     fetchData();
   }, [route.params.slug]);
 
+  useEffect(() => {
+    if (selectedQuantity) {
+      const selectedSize = siPi.find((item) => item.quantity === selectedQuantity);
+      if (selectedSize) {
+        setNPrice(selectedSize.price);
+      }
+    }
+  }, [selectedQuantity, siPi]);
+
   const getProductAllPhoto = async () => {
     try {
-        console.log("");
-      const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/product-allphoto/${productId}`);
-      console.log("data",data);
+      console.log("productId2", productId);
+      const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/product-allphoto/${productId?.productId}`);
+      console.log("data", data);
       if (data) {
         setProductPhotos(data);
       }
@@ -73,6 +95,10 @@ const ProductDetails = ( ) => {
       console.log(error);
     }
   };
+
+  // console.log("ProductPhotos", productPhotos);
+
+
 
   const getSimilarProduct = async () => {
     try {
@@ -83,39 +109,45 @@ const ProductDetails = ( ) => {
     }
   };
 
-  const addToCart = (product, selectedSize) => {
-    if (!selectedSize) {
-        Alert.alert('Please select a valid quantity');
-      return;
-    }
-
-    const updatedCart = [...cart];
-    const existingProduct = updatedCart.find((item) => item._id === product._id);
-
-    if (existingProduct) {
-      existingProduct.customQuantity += 1;
-    } else {
-      updatedCart.push({ ...product, customQuantity: 1, selectedSize, unit });
-    }
-
-    setCart(updatedCart);
-    // localStorage.setItem('cart', JSON.stringify(updatedCart)); // React Native doesn't have localStorage
-    Alert.alert('Item Added to cart');
-  };
-
   const changeMainImage = (photo) => {
-    // Handle changing the main image
+    console.log("photo", photo);
   };
 
-  const selectedSize = siPi.find((item) => item.quantity === selectedQuantity);
+  const handleQuantityChange = (value) => {
+    setSelectedQuantity(value);
+  };
 
-  useEffect(() => {
-    if (selectedSize) {
-      setNPrice(selectedSize.price);
+  const handleAddCart = async () => {
+    try {
+      const cartString = await AsyncStorage.getItem('@cart');
+      const cart = cartString ? JSON.parse(cartString) : [];
+      const selectedProduct = {
+        productId,
+        productName,
+        productSlug,
+        productDescription,
+        productFeature,
+        productPrice,
+        productDiscount,
+        Quantity: selectedQuantity,
+        pricedata,
+      };
+
+      const updatedCart = [...cart, selectedProduct];
+      await AsyncStorage.setItem('@cart', JSON.stringify(updatedCart));
+
+      console.log('Item added to cart successfully!');
+      Alert.alert('Item Added to cart');
+      setCartAddedMap((prevMap) => ({
+        ...prevMap,
+        [productId]: true,
+      }));
+      router.push('(home)');
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
     }
-  }, [selectedSize]);
-  console.log("productPhotos", productPhotos);
-  console.log("categoryId", categoryId);
+  };
+  console.log("pricedata", pricedata);
   return (
     <>
       <ScrollView>
@@ -129,7 +161,7 @@ const ProductDetails = ( ) => {
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
             {productPhotos.map((photo, index) => (
-              <TouchableOpacity key={index} onPress={() => changeMainImage(photo)}>
+              <TouchableOpacity key={index} onPress={() => changeMainImage(photo._id)}>
                 <Image
                   source={{ uri: `data:${photo.contentType};base64,${photo?.data}` }}
                   style={{ width: 60, height: 60, margin: 4 }}
@@ -140,54 +172,55 @@ const ProductDetails = ( ) => {
           </View>
         </View>
 
-        <View style={{ margin: 16 }}>
-          {/* <Text style={{ textAlign: 'center', fontSize: 24 }}>{product}</Text> */}
-          <View style={{ borderBottomWidth: 1, borderBottomColor: 'grey', marginVertical: 8 }} />
-
-          <View style={{ marginVertical: 8 }}>
-            <Text>Available quantities:</Text>
-            <Picker
-              selectedValue={selectedQuantity}
-              onValueChange={(itemValue) => handleQuantityChange(itemValue)}
-            >
-              <Picker.Item label="Please select an option" value="" />
-              {siPi.map((item) => (
-                <Picker.Item key={item.quantity} label={item.quantity} value={item.quantity} />
-              ))}
-            </Picker>
-            <Text>Selected quantity: {selectedQuantity}</Text>
-          </View>
-
-          {nprice && selectedSize ? (
-            <>
-              <Text>
-                Updated Price: {Math.round(nprice).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
+        <View style={styles.productContainer}>
+          <ScrollView style={styles.productDetailsContainer}>
+            <Text style={styles.productName}>{productName}</Text>
+            <View style={styles.productDescription}>
+              <Text style={styles.productDetails}>{productDescription}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={{ color: "gray", textDecorationLine: "line-through" }}>
+                {Math.floor(productPrice * (100 / (100 - productDiscount)))}
               </Text>
-              {/* Include other details related to the selected size */}
-            </>
-          ) : (
-            <Text>No pricing information available for the selected option.</Text>
-          )}
+              <Text style={styles.Price}>&#x20B9; {productPrice}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailValue}>{productDiscount ? productDiscount : "0"}% OFF</Text>
+            </View>
+            <View style={{ marginVertical: 8 }}>
+              <Text>Available quantities</Text>
+              <Picker
+                selectedValue={selectedQuantity}
+                onValueChange={(itemValue) => handleQuantityChange(itemValue)}
+              >
+                <Picker.Item label="Please select an option" value="" />
+                {pricedata && JSON.parse(pricedata)?.size?.map((item, index) => (
+                  <Picker.Item key={index} label={item.quantity} value={item.price} />
+                ))}
+              </Picker>
+              <Text>Selected quantity: {selectedQuantity}</Text>
+            </View>
+          </ScrollView>
 
-          {/* Other product details */}
-          {/* ... */}
-
-          <TouchableOpacity
+          <Pressable
             style={{
-              backgroundColor: 'white',
-              borderRadius: 8,
-              paddingVertical: 12,
-              marginVertical: 16,
-              alignItems: 'center',
-                borderWidth: 1,
-                    borderColor: "blue",
+              padding: 10,
+              backgroundColor:"white",
+              borderWidth: 0.5,
+              borderColor:  "blue",
+              borderRadius: 5,
+              width: "80%",
+              marginHorizontal: "10%",
+              marginBottom: 20,
             }}
-            onPress={() => {
-            //   addToCart(product, selectedSize);
-            }}
+            onPress={handleAddCart}
+            
           >
-            <Text style={{ color: 'blue', fontWeight: 'bold' }}>ADD TO CART</Text>
-          </TouchableOpacity>
+            <Text style={{ textAlign: "center", color:"blue", fontWeight: "bold" }}>
+           Add to cart
+            </Text>
+          </Pressable>
+
         </View>
 
         <View style={{ margin: 16 }}>
@@ -203,7 +236,6 @@ const ProductDetails = ( ) => {
                   style={{ width: '100%', height: 150 }}
                   resizeMode="cover"
                 />
-                {/* <Text>{p.name}</Text> */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text>
                     {Math.round(p.price - (p.price * p.discount) / 100).toLocaleString('en-IN', {
@@ -223,5 +255,122 @@ const ProductDetails = ( ) => {
     </>
   );
 };
+
+
+const styles = StyleSheet.create({
+  container: {
+    margin: 16,
+  },
+  mainImage: {
+    alignItems: 'center',
+  },
+  mainImageStyle: {
+    width: 300,
+    height: 300,
+  },
+  thumbnailContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  thumbnailImage: {
+    width: 60,
+    height: 60,
+    margin: 4,
+  },
+  productContainer: {
+    marginTop: 16,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    borderWidth: 0.5,
+    borderColor: 'blue',
+    width: '80%',
+    marginHorizontal: '10%',
+    marginBottom: 20,
+    height: 250
+  },
+  productDetailsContainer: {
+    flex: 1,
+  },
+  productName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  productDescription: {
+    marginBottom: 8,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  Price: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  detailValue: {
+    fontSize: 16,
+    color: 'green',
+  },
+  quantityPickerContainer: {
+    marginVertical: 8,
+  },
+  quantityPicker: {
+    height: 40,
+    width: '100%',
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  selectedQuantityText: {
+    marginTop: 8,
+    fontSize: 16,
+  },
+  addToCartButton: {
+    padding: 10,
+    backgroundColor: 'white',
+    borderWidth: 0.5,
+    borderColor: 'blue',
+    borderRadius: 5,
+    width: '80%',
+    marginHorizontal: '10%',
+    marginBottom: 20,
+  },
+  addToCartButtonText: {
+    textAlign: 'center',
+    color: 'blue',
+    fontWeight: 'bold',
+  },
+  similarProductsContainer: {
+    margin: 16,
+  },
+  similarProductsHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  noSimilarProductsText: {
+    textAlign: 'center',
+  },
+  similarProductItem: {
+    width: '33%',
+  },
+  similarProductImage: {
+    width: '100%',
+    height: 150,
+  },
+  similarProductPriceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  similarProductPrice: {
+    fontSize: 16,
+  },
+  discountedPrice: {
+    textDecorationLine: 'line-through',
+    color: 'red',
+  },
+});
+
 
 export default ProductDetails;

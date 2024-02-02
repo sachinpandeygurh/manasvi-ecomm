@@ -67,29 +67,50 @@ const Products = () => {
     }
   };
   const navigation = useNavigation();
-  const handleProductDetails =(productId,  categoryId)=>{
+  const handleProductDetails =(
+    productId,
+    productName,
+    productSlug,
+    productDescription,
+    productFeature,
+    productPrice,
+    productDiscount,
+    quantity,
+    pricedata
+  )=>{
     // console.log("handleProductDetails", productId);
     try {
       navigation.navigate('aboutproduct', {
-        id: productId,
-        categoryId
+        productId,
+        productName,
+        productSlug,
+        productDescription,
+        productFeature,
+        productPrice,
+        productDiscount,
+        quantity,
+        pricedata
       });
     } catch (error) {
       console.error("Error during navigation:", error);
     }
     // await 
   }
+
+
+  
   const handleAddCart = async (
-    product_id,
-    productid,
-    productname,
-    slug,
-    description,
-    feature,
-    price,
-    baseCategory
+    productId,
+    productName,
+    productSlug,
+    productDescription,
+    productFeature,
+    productPrice,
+    productDiscount,
+    quantity,
+    pricedata
   ) => {
-    if (cartAddedMap[product_id]) {
+    if (cartAddedMap[productId]) {
       // If the item is already added, do nothing
       return;
     }
@@ -98,14 +119,15 @@ const Products = () => {
       const cartString = await AsyncStorage.getItem('@cart');
       const cart = cartString ? JSON.parse(cartString) : [];
       const selectedProduct = {
-        product_id, 
-        productname,
-        slug,
-        description,
-        feature,
-        price,
-        discount ,
-        quentity
+        productId,
+    productName,
+    productSlug,
+    productDescription,
+    productFeature,
+    productPrice,
+    productDiscount,
+    quantity,
+    pricedata
       };
   
       const updatedCart = [...cart, selectedProduct];
@@ -116,13 +138,13 @@ const Products = () => {
       // Update the cartAddedMap to mark the current product as added
       setCartAddedMap((prevMap) => ({
         ...prevMap,
-        [product_id]: true,
+        [productId]: true,
       }));
     } catch (error) {
       console.error('Error adding item to cart:', error);
     }
   };
-  
+  console.log("products", products);
   return (
     <View>
       <ScrollView>
@@ -152,10 +174,20 @@ const Products = () => {
           >
             {products?.map((p) => (
               <TouchableOpacity 
-                key={p._id}
-                onPress={() => handleProductDetails(p._id, p.category)}
-                style={styles.productContainer}
-              >
+              key={p._id}
+              onPress={() => handleProductDetails({ 
+                productId: p._id,
+                productName: p.name,
+                productSlug: p.slug,
+                productDescription: p.description,
+                productFeature: p.feature,
+                productPrice: p.price,
+                productDiscount: p.discount,
+                quantity: p.quentity === 1,
+                pricedata:p.pricedata
+              })}
+              style={styles.productContainer}
+            >
                 <View style={styles.imageContainer}>
                   <Image
                     source={{
@@ -193,14 +225,15 @@ const Products = () => {
               marginBottom: 20
             }}
             onPress={() => handleAddCart(
-              p._id ,
-              productname=p.name,
-              category=p.slug,
-              p.description,
-              p.feature,
-              p.price,
-              discount=p?.discount ,
-              quentity=1
+               productId=p._id ,
+                  productName=p.name,
+                  productSlug=p.slug,
+                  productDescription=p.description,
+                  productFeature=p.feature,
+                  productPrice=p.price,
+                  productDiscount=p?.discount ,
+                  1,
+                  p.pricedata
               )}
             disabled={cartAddedMap[p._id]} 
           >

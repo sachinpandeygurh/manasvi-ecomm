@@ -1,28 +1,53 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-// import Cart from '../../components/Cart';
-import Footer from '../../components/Footer';
-import Orders from '../../components/Orders';
 import Cart from '../../components/Cart';
+import { Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
+import React from 'react'
+import Login from '../../components/auth/Login'
+import CheckData from '../../components/auth/CheckData'
+import { LinearGradient } from "expo-linear-gradient";
+import Footer from '../../components/Footer';
 
 const cart = () => {
  
 
   return (
-    <View style={styles.container}>
-        <ScrollView>
-      <Cart/>
-      {/* <Orders/> */}
-        </ScrollView>
-        <Footer/>
-    </View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <LinearGradient colors={["#7F7FD5", "#E9E4F0"]} style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <View style={styles.logoContainer}>
+            <Image style={styles.logo} source={require("../../img/c_logo.png")} />
+          </View>
+
+          <ScrollView style={{ zIndex: 1, marginVertical: 8, width:"90%" }}>
+         <Cart/>
+            {/* <CheckData/> */}
+          </ScrollView>
+
+          <Footer />
+        </View>
+      </LinearGradient>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoContainer: {
+    backgroundColor: "black",
+    borderRadius: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 100,
+    height: 40,
+    marginTop: 4,
+  },
+  logo: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 });
 

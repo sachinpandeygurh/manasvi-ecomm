@@ -24,13 +24,14 @@ const Cart = () => {
     _retrieveData();
     _retrieveData()
     // _removeData()
+    fetchData()
   }, []);
 
 
   const fetchData = async () => {
     try {
-      const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/get-product/${productId}`);
-      setProduct(data?.product);
+      const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/get-product/${products}`);
+      setProducts(data?.product);
       getSimilarProduct(data?.product?._id, data?.product?.category?._id);
       getProductAllPhoto(data?.product?._id);
 
@@ -61,13 +62,13 @@ const Cart = () => {
   };
 
 
-
+  console.log("Products", products);
   const _retrieveData = async () => {
     try {
       const value = await AsyncStorage.getItem('@cart');
       if (value !== null) {
         const cartData = JSON.parse(value);
-        console.log("cartData", cartData);
+        // console.log("cartData", cartData);
         setProducts(cartData)
         setCartItems(cartData);
         calculateTotal(cartData);
@@ -79,7 +80,7 @@ const Cart = () => {
 
   const calculateTotal = (items) => {
     const total = items.reduce((acc, item) => {
-      const itemPrice = typeof item.feature === 'number' ? item.feature : 0;
+      const itemPrice = typeof item.productPrice === 'number' ? item.productPrice : 0;
       return acc + itemPrice;
     }, 0);
     setTotalAmount(total);
@@ -99,23 +100,25 @@ const Cart = () => {
       if (!cartString) {
         return;
       }
-
+  
       let cart = JSON.parse(cartString);
       const updatedCart = cart.map((product) => {
-        if (product.product_id === productId) {
-          return { ...product, quentity: newQuantity };
+        if (product.productId === productId) {
+          return { ...product, quantity: newQuantity }; // Corrected property name to "quantity"
         }
         return product;
       });
-
+  
       await AsyncStorage.setItem('@cart', JSON.stringify(updatedCart));
-
+  
       console.log(`Quantity for product with productId ${productId} updated successfully!`);
       _retrieveData();
     } catch (error) {
       console.error('Error updating quantity:', error);
     }
   };
+
+  
 
   const handleRemove = async (productId) => {
     try {
@@ -124,8 +127,12 @@ const Cart = () => {
         return;
       }
 
+      console.log("productId", productId);
+
       let cart = JSON.parse(cartString);
-      cart = cart.filter((product) => product.product_id !== productId);
+      // Filter out the product to be removed
+      cart = cart.filter((product) => product.productId !== productId);
+
       await AsyncStorage.setItem('@cart', JSON.stringify(cart));
 
       console.log(`Product with productId ${productId} removed from cart successfully!`);
@@ -134,10 +141,12 @@ const Cart = () => {
       console.error('Error removing product from cart:', error);
     }
   };
+  console.log("CartItems", cartItems);
+
   const renderItem = ({ item }) => (
     <View style={styles.cartItem}>
-      <Text style={styles.itemName}>{item.productname}</Text>
-      <Text style={styles.itemPrice}>&#x20B9;{item.feature}</Text>
+      <Text style={styles.itemName}>{item.productName}</Text>
+      <Text style={styles.itemPrice}>&#x20B9;{item.productPrice}</Text>
     </View>
   );
 
@@ -184,68 +193,77 @@ const Cart = () => {
 
 
       <View style={styles.productContainer}>
-        {products?.map((p) => (
-          <TouchableOpacity
-            key={p.product_id}
-
-            style={styles.productItem}
-          >
-            <View style={styles.imageContainer}>
-              <Image
-                source={{
-                  uri: `https://dmart.onrender.com/api/v1/product/product-photo/${p.product_id}`,
-                }}
-                style={styles.image}
-                resizeMode="cover"
-              />
-            </View>
-            <ScrollView style={styles.productDetails}>
-              <Text style={styles.productName}>{p.productname}</Text>
-              <View style={styles.detailRow}>
-                <Text style={{ color: 'gray', textDecorationLine: 'line-through' }}>
-
-                  {p.discount ? (Math.floor(p.feature * (100 / (100 - p.discount)))) : ""}
-                </Text>
-                <Text style={styles.price}>&#x20B9; {p.feature}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                {
-                  p.discount ? (<Text style={styles.detailValue}>{p.discount}% OFF</Text>) : ""
-                }
-              </View>
-            </ScrollView>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <Pressable
-                style={styles.quantityButton}
-                onPress={() => handleQuantityChange(p._id, p.quentity - 1)}
-                disabled={p.quentity === 1}
-              >
-                <Text style={styles.quantityButtonText}>-</Text>
-              </Pressable >
-              <View style={styles.quantityparent}>
-
-                <Text style={styles.quantity}>{p.quentity}</Text>
-              </View>
-              <Pressable
-                style={styles.quantityButton}
-                onPress={() => handleQuantityChange(p._id, p.quentity + 1)}
-              >
-                <Text style={styles.quantityButtonText}>+</Text>
-              </Pressable>
-            </View>
-            <Pressable style={styles.removeButton} onPress={() => handleRemove(p._id)}>
-              <Text style={styles.removeButtonText}>Remove</Text>
-            </Pressable>
-          </TouchableOpacity>
-        ))}
+      {cartItems?.map((p) => (
+  <TouchableOpacity key={p.productId} style={styles.productItem}>
+    <View style={styles.imageContainer}>
+      <Image
+        source={{
+          uri: `https://dmart.onrender.com/api/v1/product/product-photo/${p.productId}`,
+        }}
+        style={styles.image}
+        resizeMode="cover"
+      />
+    </View>
+    <ScrollView style={styles.productDetails}>
+      <Text style={styles.productName}>{p.productName}</Text>
+      <View style={styles.detailRow}>
+        <Text style={{ color: 'gray', textDecorationLine: 'line-through' }}>
+          {p.productDiscount
+            ? Math.floor((p.productPrice * p.quantity) * (100 / (100 - p.productDiscount)))
+            : ""}
+        </Text>
+        <Text style={styles.price}>&#x20B9; {p.productPrice * p.quantity}</Text>
+      </View>
+      <View style={styles.detailRow}>
+        {p.productDiscount ? <Text style={styles.detailValue}>{p.productDiscount}% OFF</Text> : ""}
+      </View>
+    </ScrollView>
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+      <Pressable
+        style={styles.quantityButton}
+        onPress={() => {
+          handleQuantityChange(p.productId, p.quantity - 1);
+          console.log(p.quantity - 1);
+        }}
+        disabled={p.quantity === 1}
+      >
+        <Text style={styles.quantityButtonText}>-</Text>
+      </Pressable>
+      <View style={styles.quantityparent}>
+        <Text style={styles.quantity}>{p.quantity}</Text>
       </View>
       <Pressable
+        style={styles.quantityButton}
+        onPress={() => {
+          handleQuantityChange(p.productId, p.quantity + 1);
+          console.log(p.quantity + 1);
+        }}
+      >
+        <Text style={styles.quantityButtonText}>+</Text>
+      </Pressable>
+    </View>
+    <Pressable style={styles.removeButton} onPress={() => handleRemove(p.productId)}>
+      <Text style={styles.removeButtonText}>Remove</Text>
+    </Pressable>
+  </TouchableOpacity>
+))}
+
+      </View>
+
+      {cartModal()}
+      {totalAmount !== 0 && (<Pressable
         onPress={() => setModalVisible(!modalVisible)} // TODO fixed this button position 
         style={styles.fixedButton}
       >
         <Text style={{ color: "white", fontWeight: "bold" }}>Proseed →</Text>
-      </Pressable>
-      {cartModal()}
+      </Pressable>)}
+
+      {totalAmount === 0 && (
+        <View style={styles.emptyCartContainer}>
+          <Text style={styles.emptyCartText}>Hello Guest</Text>
+          <Text style={styles.emptyCartText}>Your Cart Is Empty</Text>
+        </View>
+      )}
 
     </React.Fragment>
   );
@@ -319,6 +337,7 @@ const styles = StyleSheet.create({
 
   },
   productItem: {
+    
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#ccc',
@@ -331,8 +350,9 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 150,
+    height: 50,
     borderRadius: 8,
+    paddingVertical:250
   },
   productDetails: {
     marginBottom: 8,
@@ -416,9 +436,21 @@ const styles = StyleSheet.create({
     width: 90,
     backgroundColor: 'green',
     borderRadius: 5,
-    bottom: 35,
+    bottom: 40,
     right: 0,
+    height: 40,
     alignItems: 'center',
+  },
+  emptyCartContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyCartText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: 'gray',
   },
 });
 

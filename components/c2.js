@@ -182,3 +182,61 @@ const Cart = () => {
 });
 
       export default Cart;
+
+      {product.map((item , index)=>(
+        <View style={{ margin: 16 }}>
+
+          <Text style={{ textAlign: 'center', fontSize: 24 }}>{item.name}</Text>
+          <View style={{ borderBottomWidth: 1, borderBottomColor: 'grey', marginVertical: 8 }} />
+
+          <View style={{ marginVertical: 8 }}>
+            <Text>Available quantities</Text>
+            <Picker
+              selectedValue={selectedQuantity}
+              onValueChange={(itemValue) => handleQuantityChange(itemValue)}
+            >
+              <Picker.Item label="Please select an option" value="" />
+              {siPi.map((item) => (
+                <Picker.Item key={item.quantity} label={item.quantity} value={item.quantity} />
+              ))}
+            </Picker>
+            <Text>Selected quantity: {selectedQuantity}</Text>
+          </View>
+
+          {nprice && selectedSize ? (
+            <>
+              <Text>
+                Updated Price: {Math.round(nprice).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
+              </Text>
+              {/* Include other details related to the selected size */}
+            </>
+          ) : (
+            <Text>No pricing information available for the selected option.</Text>
+          )}
+
+          {/* Other product details */}
+          {/* ... */}
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 8,
+              paddingVertical: 12,
+              marginVertical: 16,
+              alignItems: 'center',
+                borderWidth: 1,
+                    borderColor: "blue",
+            }}
+            onPress={() => handleAddCart( product_id, 
+              productname,
+              slug,
+              description,
+              feature,
+              price,
+              discount ,
+              quentity)}
+          >
+            <Text style={{ color: 'blue', fontWeight: 'bold' }}>ADD TO CART</Text>
+          </TouchableOpacity>
+        </View>
+          ))}
