@@ -34,7 +34,7 @@ export default function HomenDecor() {
     contentContainerStyle={styles.cardContainer}
   >
     {!Category?(<Text style={{margin:25 , padding:40}}><Text style={{fontSize: 24 , fontWeight: "bold"}}>Loading</Text>  Please wait...</Text>):Category.map((item) => (
-      <View key={item.id} style={styles.card}>
+      <View key={item._id} style={styles.card}>
          <Image
               style={styles.img}
               source={{ uri: `https://dmart.onrender.com/api/v1/bcategory/single-photo/65ae2f1d70cae3e36c601461` }}

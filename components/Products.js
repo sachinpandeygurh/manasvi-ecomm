@@ -144,7 +144,7 @@ const Products = () => {
       console.error('Error adding item to cart:', error);
     }
   };
-  console.log("products", products);
+  // console.log("products", products);
   return (
     <View>
       <ScrollView>

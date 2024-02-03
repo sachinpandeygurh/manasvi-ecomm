@@ -21,7 +21,20 @@ const ProductDetails = () => {
   const [selectedQuantity, setSelectedQuantity] = useState('');
   const [nprice, setNPrice] = useState('');
   const [cartAddedMap, setCartAddedMap] = useState({});
+  const [imgnum , setImgnum] = useState(1)
+  const qandp = ()=>{
 
+    pdata.kg ||
+    pdata.gm ||
+    pdata.liter ||
+    pdata.ml ||
+    pdata.meter ||
+    pdata.cm ||
+    pdata.pcs ||
+    pdata.size ||
+    [];
+  setSiPi(qandp);
+  }
   // i write this way because it is work on this way
   const {
     productId = productId.productId,
@@ -34,7 +47,7 @@ const ProductDetails = () => {
     quantity = productId.quantity,
     pricedata = productId.pricedata,
   } = route.params;
-  console.log("productId", productId);
+  console.log("pricedata", pricedata);
 
 
   useEffect(() => {
@@ -55,24 +68,42 @@ const ProductDetails = () => {
           }
         }
 
-        const qandp =
-          pdata.kg ||
-          pdata.gm ||
-          pdata.liter ||
-          pdata.ml ||
-          pdata.meter ||
-          pdata.cm ||
-          pdata.pcs ||
-          pdata.size ||
-          [];
-        setSiPi(qandp);
-      } catch (error) {
+      }catch (error) {
         console.log(error);
       }
     };
+    const pdata = pricedata ? JSON.parse(pricedata) : {};
+    const qandp =
+      pdata.kg ||
+      pdata.gm ||
+      pdata.liter ||
+      pdata.ml ||
+      pdata.meter ||
+      pdata.cm ||
+      pdata.pcs ||
+      pdata.size ||
+      [];
+  
+    for (const propertyName in pdata) {
+      if (
+        pdata.hasOwnProperty(propertyName) &&
+        Array.isArray(pdata[propertyName])
+      ) {
+        const u = propertyName;
+        console.log(u, "unit");
+        setUnit(u);
+      }
+    }
+  
+    setSiPi(qandp);
 
     fetchData();
   }, [route.params.slug]);
+
+  // const data =[ "kg" ,"gm" ,"liter","ml","meter","cm","pcs","size" ]
+  
+
+  console.log("sipi", siPi)
 
   useEffect(() => {
     if (selectedQuantity) {
@@ -85,7 +116,7 @@ const ProductDetails = () => {
 
   const getProductAllPhoto = async () => {
     try {
-      console.log("productId2", productId);
+      // console.log("productId2", productId);
       const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/product-allphoto/${productId?.productId}`);
       console.log("data", data);
       if (data) {
@@ -109,8 +140,8 @@ const ProductDetails = () => {
     }
   };
 
-  const changeMainImage = (photo) => {
-    console.log("photo", photo);
+  const changeMainImage = (index) => {
+   setImgnum(index)
   };
 
   const handleQuantityChange = (value) => {
@@ -147,21 +178,21 @@ const ProductDetails = () => {
       console.error('Error adding item to cart:', error);
     }
   };
-  console.log("pricedata", pricedata);
+  // console.log("pricedata", pricedata);
   return (
     <>
       <ScrollView>
         <View style={{ margin: 16 }}>
           <View style={{ alignItems: 'center' }}>
             <Image
-              source={{ uri: `data:${productPhotos[0]?.contentType};base64,${productPhotos[0]?.data}` }}
+              source={{ uri: `data:${productPhotos[0]?.contentType};base64,${productPhotos[imgnum]?.data}` }}
               style={{ width: 300, height: 300 }}
               resizeMode="cover"
             />
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
             {productPhotos.map((photo, index) => (
-              <TouchableOpacity key={index} onPress={() => changeMainImage(photo._id)}>
+              <TouchableOpacity key={index} onPress={() => changeMainImage(index)}>
                 <Image
                   source={{ uri: `data:${photo.contentType};base64,${photo?.data}` }}
                   style={{ width: 60, height: 60, margin: 4 }}
@@ -187,18 +218,18 @@ const ProductDetails = () => {
             <View style={styles.detailRow}>
               <Text style={styles.detailValue}>{productDiscount ? productDiscount : "0"}% OFF</Text>
             </View>
-            <View style={{ marginVertical: 8 }}>
+            <View >
               <Text>Available quantities</Text>
-              <Picker
+              <Picker  style={{color:"red",  backgroundColor:"gray"}}
                 selectedValue={selectedQuantity}
                 onValueChange={(itemValue) => handleQuantityChange(itemValue)}
               >
-                <Picker.Item label="Please select an option" value="" />
-                {pricedata && JSON.parse(pricedata)?.size?.map((item, index) => (
-                  <Picker.Item key={index} label={item.quantity} value={item.price} />
+                <Picker.Item style={{color:"red", backgroundColor:"blue", height:300}} label="Please select an option" value={pricedata} />
+                {pricedata && siPi?.map((item, index) => (
+                  <Picker.Item style={{color:"red" , backgroundColor:"green"}} key={index} label={item.quantity} value={item.price} /> // TODO data nor vshoww in app
                 ))}
               </Picker>
-              <Text>Selected quantity: {selectedQuantity}</Text>
+              <Text >Selected quantity: {selectedQuantity}</Text>
             </View>
           </ScrollView>
 
@@ -223,7 +254,7 @@ const ProductDetails = () => {
 
         </View>
 
-        <View style={{ margin: 16 }}>
+        {/* <View style={{ margin: 16 }}>
           <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Similar Products ➡️</Text>
           {relatedProducts.length < 1 && (
             <Text style={{ textAlign: 'center' }}>No Similar Products found</Text>
@@ -250,7 +281,7 @@ const ProductDetails = () => {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </View> */}
       </ScrollView>
     </>
   );

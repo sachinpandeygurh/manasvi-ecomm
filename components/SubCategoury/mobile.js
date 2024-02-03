@@ -28,7 +28,7 @@ export default function Mobile() {
     contentContainerStyle={styles.cardContainer}
   >
     {categoryItems.map((item) => (
-      <View key={item.id} style={styles.card}>
+      <View key={item._id} style={styles.card}>
         <Image style={styles.img} source={item.img} />
         <Text style={styles.name}>{item.name}</Text>
       </View>

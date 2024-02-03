@@ -5,6 +5,7 @@ import { Feather, Entypo, Ionicons, Octicons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
+import CheckData from '../../components/auth/CheckData'
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import LocationComponent from "../../components/Location";
@@ -422,6 +423,7 @@ const index = () => {
         <Header />
       <ScrollView style={{zIndex:1, marginVertical:80}}>
         <LocationComponent />
+        {/* <CheckData/> */}
         <Carusel />
         <Categoury />
         <SubCategoury />

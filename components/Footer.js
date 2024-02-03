@@ -26,7 +26,7 @@ const Footer = () => {
   const retrieveCart = async () => {
     try {
       const storedValue = await AsyncStorage.getItem('@cart') 
-      console.log("storedValue", storedValue);
+      // console.log("storedValue", storedValue);
       setCartArray(storedValue)
       if (storedValue !== null) {
         const cartData = storedValue ? JSON.parse(storedValue) : [];

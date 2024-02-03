@@ -240,3 +240,267 @@ const Cart = () => {
           </TouchableOpacity>
         </View>
           ))}
+
+
+          
+
+
+  function generateUniqueId(length) {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
+    let id = "";
+
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charactersLength);
+      id += characters.charAt(randomIndex);
+    }
+
+    return id;
+  }
+
+  //for uuid
+  async function fetchOrderId() {
+    try {
+
+      const orderid = "order_CD" + generateUniqueId(12);
+
+      setOrderId(orderid);
+    } catch (error) {
+      console.error("Error fetching order ID:", error);
+    }
+  }
+
+  const totalPrice = () => {
+    try {
+      let amount = 0;
+
+      // for accessing pricecartdata
+      cart.forEach((item) => {
+        const selectedSize = item.selectedSize;
+
+        const quantity = selectedSize.quantity;
+        const price = selectedSize.price;
+        const itemTotal = Math.round(
+          (price - (price * item.discount) / 100) * item.customQuantity
+        );
+        amount += itemTotal;
+      });
+      console.log(cart, "cart");
+
+      if (amount <= 499) {
+        amount += 0;
+      } else if (amount >= 500 && amount <= 999) {
+        amount += 30;
+      } else if (amount >= 1000) {
+        amount += 60;
+      }
+
+      localStorage.setItem("amount", JSON.stringify(amount));
+
+      return amount;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const totalAmount = () => {
+    try {
+      let amount = 0;
+
+      cart?.forEach((item) => {
+        // /start
+        const selectedSize = item.selectedSize;
+
+        const quantity = selectedSize.quantity;
+        const price = selectedSize.price;
+        //end
+
+        const itemTotal = Math.round(price * item.customQuantity);
+        amount += itemTotal;
+      });
+
+      return amount;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const discountamt = () => {
+    try {
+      let amount = 0;
+
+      cart?.forEach((item) => {
+        // /start
+        const selectedSize = item.selectedSize;
+
+        const quantity = selectedSize.quantity;
+        const price = selectedSize.price;
+        //end
+
+        const itemTotal = Math.round(
+          ((price * item.discount) / 100) * item.customQuantity
+        );
+        amount += itemTotal;
+      });
+
+      return amount;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  var retrievedValue = localStorage.getItem("amount");
+  var parsedValue = JSON.parse(retrievedValue);
+
+  function loadRazorpay() {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onerror = () => {
+      alert("Razorpay SDK failed to load. Are you online?");
+    };
+    script.onload = async () => {
+      try {
+        setLoading(true);
+        const result = await axios.post("https://dmart.onrender.com/api/v1/payment/create-order", {
+          cart,
+          amount: parsedValue * 100,
+        });
+        console.log(result, "result");
+        const { amount, id: order_id, currency } = result.data;
+        const {
+          data: { key: razorpayKey },
+        } = await axios.get("/api/v1/payment/get-razorpay-key");
+        // console.log(cart);
+        const options = {
+          key: razorpayKey,
+          amount: amount,
+          currency: currency,
+          name: "manasvi technologies",
+          description: "transction to manasvi",
+          order_id: order_id,
+          handler: async function (response) {
+            await axios.post("https://dmart.onrender.com/api/v1/payment/pay-order", {
+              paymentMode: true,
+              amount: amount,
+              products: cart,
+              razorpay: {
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              },
+              buyer: auth?.user?._id,
+            });
+            // alert(result.data.msg);
+            // fetchOrders();
+            localStorage.removeItem("cart");
+            setCart([]);
+            navigate(`/dashboard/user/orders`);
+            toast.success("Payment Completed Successfully ");
+          },
+          prefill: {
+            name: "Manasvi technologies",
+            email: "manasvi@gmail.com",
+            contact: "1111111111",
+          },
+          notes: {
+            address: "30, minaal residency bhopal",
+          },
+          theme: {
+            color: "#80c0f0",
+          },
+        };
+
+        setLoading(false);
+        const paymentObject = new window.Razorpay(options);
+        paymentObject.open();
+      } catch (err) {
+        alert(err);
+        setLoading(false);
+      }
+    };
+    document.body.appendChild(script);
+  }
+
+  //another cod method
+
+  // Cash on delivery testing
+  let phone = "+91" + auth?.user?.phone;
+  // Cash on delivery testing
+
+  const cash_data = async () => {
+    try {
+      setLoading(true);
+      //below code for otp
+      const apiKey = "d85e660e-4d4d-11ee-addf-0200cd936042";
+      const mobileNumber = phone;
+
+      const min = 100000;
+      const max = 999999;
+      OTP1 = Math.floor(Math.random() * (max - min + 1)) + min;
+      localStorage.setItem("OTP", JSON.stringify(OTP1));
+      // console.log(OTP1);
+      const url = `https://2factor.in/API/V1/${apiKey}/SMS/${mobileNumber}/${OTP1}`;
+      toast.success("OTP send successfully! ");
+      const config = {
+        method: "get",
+        maxBodyLength: Infinity,
+        url: url,
+        headers: {},
+      };
+
+      axios(config)
+        .then(function (response) {
+          console.log(JSON.stringify(response.data.Status));
+          if (response.data.Status) {
+            setOtp_gen(true);
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      setLoading(false);
+      //end
+    } catch (err) {
+      alert(err);
+      setLoading(false);
+    }
+  };
+
+  //total price
+
+  //cash on delivery
+  var OTP1 = 0;
+
+  const handleCashOnDelivery = () => {
+    setShowOtpInput(true);
+    cash_data();
+    // Show the OTP input field
+  };
+
+  //for otp input form
+  const handleSubmit = async () => {
+    let otp_local = localStorage.getItem("OTP");
+    if (otp_local === inputValue) {
+      localStorage.removeItem("OTP");
+      setVerified(true); // Assuming you have a 'verified' state to track OTP verification
+      toast.success("OTP verified Successfully!");
+      await axios.post("/api/v1/payment/create-order-COD", {
+        isPaid: true,
+        paymentMode: false,
+        amount: parsedValue,
+        products: cart,
+        buyer: auth?.user?._id,
+        razorpay: {
+          orderId: orderId,
+        },
+      });
+      // const { amount, id: _id } = result.data;
+      localStorage.removeItem("cart");
+      setCart([]);
+      navigate(`/dashboard/user/orders`);
+      toast.success("Order Placed Successfully! ");
+      // You can call the order generation function here
+    } else {
+      toast.error("Incorrect OTP entered.");
+    }
+  };

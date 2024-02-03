@@ -52,7 +52,7 @@ const Orders = () => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>All Orders</Text>
       {orders?.map((o, i) => (
-        <View style={styles.orderContainer} key={o._id}>
+        <View style={styles.orderContainer} key={i}>
           <View style={styles.orderHeader}>
             <Text style={styles.orderId}>{o?.razorpay?.orderId}</Text>
             <Text style={styles.orderStatus}>{o?.status}</Text>
@@ -69,7 +69,7 @@ const Orders = () => {
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {o?.products?.map((p, j) => (
-              <View style={styles.productCard} key={p._id}>
+              <View style={styles.productCard} key={j}>
                 <Image
                   source={{ uri: `/api/v1/product/product-photo/${p._id}` }}
                   style={styles.productImage}
