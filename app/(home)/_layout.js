@@ -16,6 +16,8 @@ export default function Layout() {
       <Stack.Screen name="login"/>
       <Stack.Screen name="signup"/>
       <Stack.Screen name="aboutProduct"/>
+      <Stack.Screen name="searchScreen"/>
+      <Stack.Screen name="SplsceScreen"/>
     </Stack>
   );
 }

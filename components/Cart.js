@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,9 +9,10 @@ import {
   Image,
   ScrollView,
   Modal,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+  Alert,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -84,7 +85,9 @@ const Cart = () => {
         const quantity = selectedSize.quantity;
         const price = selectedSize.price;
 
-        const itemTotal = Math.round(((price * item.discount) / 100) * item.customQuantity);
+        const itemTotal = Math.round(
+          ((price * item.discount) / 100) * item.customQuantity
+        );
         amount += itemTotal;
       });
 
@@ -98,100 +101,101 @@ const Cart = () => {
 
   const _retrieveData = async () => {
     try {
-      const value = await AsyncStorage.getItem('@cart');
+      const value = await AsyncStorage.getItem("@cart");
       if (value !== null) {
         const cartData = JSON.parse(value);
         // console.log("cartData", cartData);
         setProducts(cartData);
         setCartItems(cartData);
         calculateTotal(cartData);
-        setCart(cartData)
+        setCart(cartData);
       }
     } catch (error) {
       console.log(error);
     }
   };
-  // console.log("Products111", products);
+  console.log("cartItems", cartItems);
+  console.log("totalAmount", totalAmount);
 
   const loadRazorpay = async () => {
-  
     try {
-      setLoading(true);
-      if (!cart || cart.length === 0) {
-        console.log('Cart is empty or undefined.');
-        setLoading(false);
-        return;
-      }
-      const result = await fetch("https://dmart.onrender.com/api/v1/payment/create-order", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          cart,
-          amount: parsedValue * 100,
-        }),
-      });
+      const result = await fetch(
+        "https://dmart.onrender.com/api/v1/payment/create-order",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cart: cartItems.filter((item) => Object.keys(item).length !== 0),
+            amount: totalAmount,
+           
+          }),
+        }
+      );
+      const data = await result.json();
+      const { amount, id: order_id, currency } = data;
 
-      const resultData = await result.json();
-      const { amount, id: order_id, currency } = resultData;
-      const razorpayKeyResult = await fetch("https://dmart.onrender.com/api/v1/payment/get-razorpay-key");
+      const razorpayKeyResult = await fetch(
+        "https://dmart.onrender.com/api/v1/payment/get-razorpay-key"
+      );
       const razorpayKeyData = await razorpayKeyResult.json();
-      const { key: razorpayKey } = razorpayKeyData;
+      const razorpayKey = razorpayKeyData.data.key;
 
       const options = {
-        key: razorpayKey,
-        amount: amount,
+        description: "Transaction to Manasvi",
+        image: "https://example.com/your_logo.png",
         currency: currency,
-        name: "manasvi technologies",
-        description: "transaction to manasvi",
-        order_id: order_id,
-        handler: async function (response) {
+        key: razorpayKey,
+        amount: amount * 100, // Razorpay expects amount in paisa
+        name: "Manasvi Technologies",
+        prefill: {
+          email: "manasvi@gmail.com",
+          contact: "1111111111",
+          name: "Manasvi Technologies",
+        },
+        theme: { color: "#80c0f0" },
+      };
+
+      RazorpayCheckout.open(options)
+        .then(async (response) => {
+          // Handle success
           await fetch("https://dmart.onrender.com/api/v1/payment/pay-order", {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               paymentMode: true,
               amount: amount,
-              products: cart,
+              products: cartItems,
               razorpay: {
                 orderId: response.razorpay_order_id,
                 paymentId: response.razorpay_payment_id,
                 signature: response.razorpay_signature,
               },
-              buyer: auth?.user?._id,
+              buyer: auth?.user?._id || "65b8daf785afa34463099f72",
             }),
           });
 
-          Alert.alert("Payment Completed Successfully ");
-        },
-        prefill: {
-          name: "Manasvi technologies",
-          email: "manasvi@gmail.com",
-          contact: "1111111111",
-        },
-        notes: {
-          address: "30, minaal residency bhopal",
-        },
-        theme: {
-          color: "#80c0f0",
-        },
-      };
-
-      setLoading(false);
-      const paymentObject = new Razorpay(options);
-      paymentObject.open();
+          // Clear the cart
+          setCart([]);
+          router.push("account");
+        })
+        .catch((error) => {
+          // Handle error
+          console.log("Error:", error);
+        });
     } catch (error) {
-      console.error(error);
-      setLoading(false);
+      console.error("Error:", error);
     }
   };
 
   const fetchData = async () => {
     try {
-      const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/get-product/${products}`);
+      const { data } = await axios.get(
+        `https://dmart.onrender.com/api/v1/product/get-product/${products}`
+      );
       setProducts(data?.product);
       // getProductAllPhoto(data?.product?._id);
 
@@ -199,7 +203,10 @@ const Cart = () => {
       const pdata = pd ? JSON.parse(pd) : {};
 
       for (const propertyName in pdata) {
-        if (pdata.hasOwnProperty(propertyName) && Array.isArray(pdata[propertyName])) {
+        if (
+          pdata.hasOwnProperty(propertyName) &&
+          Array.isArray(pdata[propertyName])
+        ) {
           const u = propertyName;
           setUnit(u);
         }
@@ -217,7 +224,7 @@ const Cart = () => {
         [];
       // setSiPi(qandp);
     } catch (error) {
-      console.log(error);
+      console.log("fetchData",error);
     }
   };
 
@@ -225,7 +232,8 @@ const Cart = () => {
 
   const calculateTotal = (items) => {
     const total = items.reduce((acc, item) => {
-      const itemPrice = typeof item.productPrice === 'number' ? item.productPrice : 0;
+      const itemPrice =
+        typeof item.productPrice === "number" ? item.productPrice : 0;
       return acc + itemPrice;
     }, 0);
     setTotalAmount(total);
@@ -233,8 +241,8 @@ const Cart = () => {
 
   const _removeData = async () => {
     try {
-      await AsyncStorage.removeItem('@cart');
-      console.log('Data removed successfully!');
+      await AsyncStorage.removeItem("@cart");
+      console.log("Data removed successfully!");
     } catch (error) {
       console.log(error);
     }
@@ -242,11 +250,11 @@ const Cart = () => {
 
   const handleQuantityChange = async (productId, newQuantity) => {
     try {
-      const cartString = await AsyncStorage.getItem('@cart');
+      const cartString = await AsyncStorage.getItem("@cart");
       if (!cartString) {
         return;
       }
-
+  
       let cart = JSON.parse(cartString);
       const updatedCart = cart.map((product) => {
         if (product.productId === productId) {
@@ -254,37 +262,37 @@ const Cart = () => {
         }
         return product;
       });
-
-      await AsyncStorage.setItem('@cart', JSON.stringify(updatedCart));
-
+  
+      await AsyncStorage.setItem("@cart", JSON.stringify(updatedCart));
+  
       console.log(`Quantity for product with productId ${productId} updated successfully!`);
-      _retrieveData();
+      _retrieveData(); // Assuming _retrieveData is used to update the UI with the latest data
     } catch (error) {
-      console.error('Error updating quantity:', error);
+      console.error("Error updating quantity:", error);
     }
   };
-
+  
   const handleRemove = async (productId) => {
     try {
-      const cartString = await AsyncStorage.getItem('@cart');
+      const cartString = await AsyncStorage.getItem("@cart");
       if (!cartString) {
         return;
       }
-
-      // console.log("productId", productId);
-
+  
       let cart = JSON.parse(cartString);
       // Filter out the product to be removed
-      cart = cart.filter((product) => product.productId !== productId);
-
-      await AsyncStorage.setItem('@cart', JSON.stringify(cart));
-
+      const updatedCart = cart.filter((product) => product.productId !== productId);
+  
+      await AsyncStorage.setItem("@cart", JSON.stringify(updatedCart));
+  
       console.log(`Product with productId ${productId} removed from cart successfully!`);
-      _retrieveData(); // Update the cart items after removal
+      _retrieveData(); // Assuming _retrieveData is used to update the UI with the latest data
     } catch (error) {
-      console.error('Error removing product from cart:', error);
+      console.error("Error removing product from cart:", error);
     }
   };
+  
+  
 
   const renderItem = ({ item }) => (
     <View style={styles.cartItem}>
@@ -292,7 +300,6 @@ const Cart = () => {
       <Text style={styles.itemPrice}>&#x20B9;{item.productPrice}</Text>
     </View>
   );
-
 
   const addressCheckout = () => {
     return (
@@ -310,12 +317,13 @@ const Cart = () => {
                 <Text style={styles.bold}>Shipping Address</Text>
               </Text>
               <Text>
-                {auth?.user?.shipping_address} {auth?.user?.pincode} {auth?.user?.landmark}{' '}
-                {auth?.user?.altername_phone} {auth?.user?.city_district_town}
+                {auth?.user?.shipping_address} {auth?.user?.pincode}{" "}
+                {auth?.user?.landmark} {auth?.user?.altername_phone}{" "}
+                {auth?.user?.city_district_town}
               </Text>
               <TouchableOpacity
                 style={styles.btnOutlineWarning}
-                onPress={() => router.push('(account)')}
+                onPress={() => router.push("(account)")}
               >
                 <Text>Update Address</Text>
               </TouchableOpacity>
@@ -326,14 +334,14 @@ const Cart = () => {
             {auth?.token ? (
               <TouchableOpacity
                 style={styles.btnOutlineWarning}
-                onPress={() => router.push('(account)')}
+                onPress={() => router.push("(account)")}
               >
                 <Text>Update Address</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
                 style={styles.btnOutlineWarning}
-                onPress={() => router.push('(login)', { state: '/cart' })}
+                onPress={() => router.push("(login)", { state: "/cart" })}
               >
                 <Text>Please Login to checkout</Text>
               </TouchableOpacity>
@@ -350,7 +358,7 @@ const Cart = () => {
                 onPress={loadRazorpay}
                 disabled={loading || !auth?.user?.shipping_address}
               >
-                <Text>{loading ? 'Processing ....' : 'Pay Online'}</Text>
+                <Text>{loading ? "Processing ...." : "Pay Online"}</Text>
               </TouchableOpacity>
               {/* COD payment */}
               <TouchableOpacity
@@ -382,131 +390,108 @@ const Cart = () => {
     );
   };
 
-  const cartModal = () => (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={modalVisible}
-      onRequestClose={() => {
-        setModalVisible(!modalVisible);
-      }}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalHeader}>Shopping Cart</Text>
-          <ScrollView style={{ height: 300 }}>
-
-            <FlatList
-              data={cartItems}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.productId +2 }
-            />
-          </ScrollView>
-          <View style={styles.totalContainer}>
-            <Text style={styles.totalText}>Total:</Text>
-            <Text style={styles.totalAmount}>&#x20B9; {totalAmount}</Text>
-          </View>
-          <TouchableOpacity style={styles.checkoutButton} onPress={_removeData}>
-            <Text style={styles.checkoutButtonText}>Checkout</Text>
-          </TouchableOpacity>
-          <Pressable
-            style={styles.closeButton}
-            onPress={() => setModalVisible(!modalVisible)}
-          >
-            <Text style={styles.closeButtonText}>Close</Text>
-          </Pressable>
-        </View>
-      </View>
-    </Modal>
-  );
-
-
-
-
-
-
   return (
     <React.Fragment>
-
-
       <View style={styles.productContainer}>
-        {cartItems.filter(item => Object.keys(item).length !== 0).map((p) => (
-          <TouchableOpacity key={p.productId+3} style={styles.productItem}>
-            <View style={styles.imageContainer}>
-              <Image
-                source={{
-                  uri: `https://dmart.onrender.com/api/v1/product/product-photo/${p.productId}`,
-                }}
-                style={styles.image}
-                resizeMode="cover"
-              />
-            </View>
-            <ScrollView style={styles.productDetails}>
-              <Text style={styles.productName}>{p.productName}</Text>
-              <View style={styles.detailRow}>
-                <Text style={{ color: 'gray', textDecorationLine: 'line-through' }}>
-                  {p.productDiscount
-                    ? Math.floor((p.productPrice * p.quantity) * (100 / (100 - p.productDiscount)))
-                    : ""}
-                </Text>
-                <Text style={styles.price}>&#x20B9; {p.productPrice * p.quantity}</Text>
+        {cartItems
+          .filter((item) => Object.keys(item).length !== 0)
+          .map((p) => (
+            <TouchableOpacity key={p.productId + 3} style={styles.productItem}>
+              <View style={styles.imageContainer}>
+                <Image
+                  source={{
+                    uri: `https://dmart.onrender.com/api/v1/product/product-photo/${p.productId}`,
+                  }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
               </View>
-              <View style={styles.detailRow}>
-                {p.productDiscount ? <Text style={styles.detailValue}>{p.productDiscount}% OFF</Text> : ""}
-              </View>
-            </ScrollView>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <Pressable
-                style={styles.quantityButton}
-                onPress={() => {
-                  handleQuantityChange(p.productId, p.quantity - 1);
-                  console.log(p.quantity - 1);
+              <ScrollView style={styles.productDetails}>
+                <Text style={styles.productName}>{p.productName}</Text>
+                <View style={styles.detailRow}>
+                  <Text
+                    style={{
+                      color: "gray",
+                      textDecorationLine: "line-through",
+                    }}
+                  >
+                    {p.productDiscount
+                      ? Math.floor(
+                          p.productPrice *
+                            p.quantity *
+                            (100 / (100 - p.productDiscount))
+                        )
+                      : ""}
+                  </Text>
+                  <Text style={styles.price}>
+                    &#x20B9; {p.productPrice * p.quantity}
+                  </Text>
+                </View>
+                <View style={styles.detailRow}>
+                  {p.productDiscount ? (
+                    <Text style={styles.detailValue}>
+                      {p.productDiscount}% OFF
+                    </Text>
+                  ) : (
+                    ""
+                  )}
+                </View>
+              </ScrollView>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
-                disabled={p.quantity === 1}
               >
-                <Text style={styles.quantityButtonText}>-</Text>
-              </Pressable>
-              <View style={styles.quantityparent}>
-                <Text style={styles.quantity}>{p.quantity}</Text>
+                <Pressable
+                  style={styles.quantityButton}
+                  onPress={() => {
+                    handleQuantityChange(p.productId, p.quantity - 1);
+                    console.log(p.quantity - 1);
+                  }}
+                  disabled={p.quantity === 1}
+                >
+                  <Text style={styles.quantityButtonText}>-</Text>
+                </Pressable>
+                <View style={styles.quantityparent}>
+                  <Text style={styles.quantity}>{p.quantity}</Text>
+                </View>
+                <Pressable
+                  style={styles.quantityButton}
+                  onPress={() => {
+                    handleQuantityChange(p.productId, p.quantity + 1);
+                    console.log(p.quantity + 1);
+                  }}
+                >
+                  <Text style={styles.quantityButtonText}>+</Text>
+                </Pressable>
               </View>
               <Pressable
-                style={styles.quantityButton}
-                onPress={() => {
-                  handleQuantityChange(p.productId, p.quantity + 1);
-                  console.log(p.quantity + 1);
-                }}
+                style={styles.removeButton}
+                onPress={() => handleRemove(p.productId)}
               >
-                <Text style={styles.quantityButtonText}>+</Text>
+                <Text style={styles.removeButtonText}>Remove</Text>
               </Pressable>
-            </View>
-            <Pressable style={styles.removeButton} onPress={() => handleRemove(p.productId)}>
-              <Text style={styles.removeButtonText}>Remove</Text>
-            </Pressable>
-          </TouchableOpacity>
-        ))}
-
-
-        <View>
-          <FlatList
-            data={cartItems.filter(item => Object.keys(item).length !== 0)}
-            renderItem={renderItem}
-            keyExtractor={(item, index) => index.toString()+1}
-          />
-          <Text>Total Amount: &#x20B9;{totalAmount}</Text>
-          <TouchableOpacity onPress={loadRazorpay}> 
-            <Text>Proceed to Checkout</Text>
-          </TouchableOpacity>
-        </View>
-
+            </TouchableOpacity>
+          ))}
+        {totalAmount !== 0 && (
+          <View>
+            <FlatList
+              data={cartItems.filter((item) => Object.keys(item).length !== 0)}
+              renderItem={renderItem}
+              keyExtractor={(item, index) => index.toString() + 1}
+            />
+            <Text style={styles.detailValue}>Total Amount: <Text style={styles.detailValue}>&#x20B9;{totalAmount}</Text></Text>
+            <TouchableOpacity
+              style={styles.checkoutButton}
+              onPress={loadRazorpay}
+            >
+              <Text style={styles.checkoutButtonText}>Checkout</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
-
-      {cartModal()}
-      {totalAmount !== 0 && (<Pressable
-        onPress={() => setModalVisible(!modalVisible)} // TODO fixed this button position 
-        style={styles.fixedButton}
-      >
-        <Text style={{ color: "white", fontWeight: "bold" }}>Proseed →</Text>
-      </Pressable>)}
 
       {totalAmount === 0 && (
         <View style={styles.emptyCartContainer}>
@@ -514,7 +499,6 @@ const Cart = () => {
           <Text style={styles.emptyCartText}>Your Cart Is Empty</Text>
         </View>
       )}
-
     </React.Fragment>
   );
 };
@@ -526,17 +510,17 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
   },
   cartItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
     padding: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
   },
   itemName: {
@@ -544,165 +528,163 @@ const styles = StyleSheet.create({
   },
   itemPrice: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   removeButton: {
-    backgroundColor: 'red',
+    backgroundColor: "red",
     padding: 8,
     borderRadius: 5,
     marginTop: 8, // Added margin top
   },
   removeButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
   },
   totalContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 16,
     borderTopWidth: 1,
     paddingTop: 8,
   },
   totalText: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   totalAmount: {
     fontSize: 18,
   },
   checkoutButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: "#3498db",
     padding: 16,
     borderRadius: 8,
     marginTop: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   checkoutButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   productContainer: {
     marginTop: 16,
-
+    marginBottom:20,
+    // paddingBottom:300
   },
   productItem: {
-
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
     padding: 16,
-    backgroundColor: "white"
+    backgroundColor: "white",
   },
   imageContainer: {
     marginBottom: 8,
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 50,
     borderRadius: 8,
-    paddingVertical: 250
+    paddingVertical: 250,
   },
   productDetails: {
     marginBottom: 8,
   },
   productName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 8,
   },
   price: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   detailValue: {
     fontSize: 16,
-    color: 'green',
+    color: "green",
   },
   quantityButton: {
     padding: 8,
-    backgroundColor: 'blue',
+    backgroundColor: "blue",
     borderRadius: 5,
     marginRight: 8,
-    width: "30%"
+    width: "30%",
   },
   quantityButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     textAlign: "center",
-    fontSize: 25
+    fontSize: 25,
   },
   quantityparent: {
     padding: 8,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 5,
     marginRight: 8,
-    width: "35%"
+    width: "35%",
   },
   quantity: {
-
-    color: 'green',
-    fontWeight: 'bold',
+    color: "green",
+    fontWeight: "bold",
     textAlign: "center",
-    fontSize: 25
+    fontSize: 25,
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 16,
     borderRadius: 8,
-    width: '80%',
+    width: "80%",
   },
   modalHeader: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
   },
   closeButton: {
-    backgroundColor: 'red',
+    backgroundColor: "red",
     padding: 8,
     borderRadius: 5,
     marginTop: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   closeButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
   },
   fixedButton: {
-    position: 'absolute',
+    position: "absolute",
     paddingVertical: 8,
     width: 90,
-    backgroundColor: 'green',
+    backgroundColor: "green",
     borderRadius: 5,
     bottom: 40,
     right: 0,
     height: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyCartContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyCartText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: 'gray',
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "gray",
   },
 });
-
 
 export default Cart;

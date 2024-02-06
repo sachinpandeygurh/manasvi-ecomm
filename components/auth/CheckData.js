@@ -26,6 +26,17 @@ _retrieveData = async () => {
   }
 };
 
+_retrieveCart = async () => {
+  try {
+    const value = await AsyncStorage.getItem('@cart');
+    if (value !== null) {
+      console.log(value);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 _removeData = async () => {
   try {
     await AsyncStorage.removeItem('@MySuperStore:key');
@@ -52,6 +63,9 @@ export default function checkData() {
     </TouchableOpacity>
     <TouchableOpacity style={styles.button} onPress={_retrieveData}>
       <Text style={styles.buttonText}>Get data from AsyncStorage</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.button} onPress={_retrieveCart}>
+      <Text style={styles.buttonText}>Get data from Cart</Text>
     </TouchableOpacity>
     <TouchableOpacity style={styles.button} onPress={_removeData}>
       <Text style={styles.buttonText}>Remove/delete data from AsyncStorage</Text>

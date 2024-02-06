@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+} from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import axios from 'axios';
-import { Pressable } from 'react-native';
+import axios from "axios";
+import { Pressable } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 const ProductDetails = () => {
   const router = useRouter();
@@ -17,24 +27,25 @@ const ProductDetails = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [productPhotos, setProductPhotos] = useState([]);
   const [siPi, setSiPi] = useState([]);
-  const [unit, setUnit] = useState('');
-  const [selectedQuantity, setSelectedQuantity] = useState('');
-  const [nprice, setNPrice] = useState('');
+  const [unit, setUnit] = useState("");
+  const [selectedQuantity, setSelectedQuantity] = useState("");
+  const [nprice, setNPrice] = useState("");
   const [cartAddedMap, setCartAddedMap] = useState({});
-  const [imgnum , setImgnum] = useState(1)
-  const qandp = ()=>{
-
+  const [imgnum, setImgnum] = useState(1);
+  const [value, setValue] = useState(null);
+  const [isFocus, setIsFocus] = useState(false);
+  const qandp = () => {
     pdata.kg ||
-    pdata.gm ||
-    pdata.liter ||
-    pdata.ml ||
-    pdata.meter ||
-    pdata.cm ||
-    pdata.pcs ||
-    pdata.size ||
-    [];
-  setSiPi(qandp);
-  }
+      pdata.gm ||
+      pdata.liter ||
+      pdata.ml ||
+      pdata.meter ||
+      pdata.cm ||
+      pdata.pcs ||
+      pdata.size ||
+      [];
+    setSiPi(qandp);
+  };
   // i write this way because it is work on this way
   const {
     productId = productId.productId,
@@ -46,15 +57,20 @@ const ProductDetails = () => {
     productDiscount = productId.productDiscount,
     quantity = productId.quantity,
     pricedata = productId.pricedata,
+    categoryId = productId.categoryId,
   } = route.params;
-  console.log("pricedata", pricedata);
 
+  const [productNewPrice, setProductNewPrice] = useState(productPrice);
+
+  console.log("product", product);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/get-product/${productId}`);
-        setProduct(data?.product);
+        const { data } = await axios.get(
+          `https://dmart.onrender.com/api/v1/product/get-product/${productId}`
+        );
+        setProduct(data);
         getSimilarProduct(data?.product?._id, data?.product?.category?._id);
         getProductAllPhoto(data?.product?._id);
 
@@ -62,13 +78,15 @@ const ProductDetails = () => {
         const pdata = pd ? JSON.parse(pd) : {};
 
         for (const propertyName in pdata) {
-          if (pdata.hasOwnProperty(propertyName) && Array.isArray(pdata[propertyName])) {
+          if (
+            pdata.hasOwnProperty(propertyName) &&
+            Array.isArray(pdata[propertyName])
+          ) {
             const u = propertyName;
             setUnit(u);
           }
         }
-
-      }catch (error) {
+      } catch (error) {
         console.log(error);
       }
     };
@@ -83,7 +101,7 @@ const ProductDetails = () => {
       pdata.pcs ||
       pdata.size ||
       [];
-  
+
     for (const propertyName in pdata) {
       if (
         pdata.hasOwnProperty(propertyName) &&
@@ -94,20 +112,17 @@ const ProductDetails = () => {
         setUnit(u);
       }
     }
-  
+
     setSiPi(qandp);
 
     fetchData();
   }, [route.params.slug]);
 
-  // const data =[ "kg" ,"gm" ,"liter","ml","meter","cm","pcs","size" ]
-  
-
-  console.log("sipi", siPi)
-
   useEffect(() => {
     if (selectedQuantity) {
-      const selectedSize = siPi.find((item) => item.quantity === selectedQuantity);
+      const selectedSize = siPi.find(
+        (item) => item.quantity === selectedQuantity
+      );
       if (selectedSize) {
         setNPrice(selectedSize.price);
       }
@@ -117,8 +132,10 @@ const ProductDetails = () => {
   const getProductAllPhoto = async () => {
     try {
       // console.log("productId2", productId);
-      const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/product-allphoto/${productId?.productId}`);
-      console.log("data", data);
+      const { data } = await axios.get(
+        `https://dmart.onrender.com/api/v1/product/product-allphoto/${productId?.productId}`
+      );
+      // console.log("data", data);
       if (data) {
         setProductPhotos(data);
       }
@@ -127,13 +144,11 @@ const ProductDetails = () => {
     }
   };
 
-  // console.log("ProductPhotos", productPhotos);
-
-
-
   const getSimilarProduct = async () => {
     try {
-      const { data } = await axios.get(`https://dmart.onrender.com/api/v1/product/related-product/${productId}/${categoryId}`);
+      const { data } = await axios.get(
+        `https://dmart.onrender.com/api/v1/product/related-product/${productId}/${categoryId}`
+      );
       setRelatedProducts(data?.products);
     } catch (error) {
       console.log(error);
@@ -141,16 +156,33 @@ const ProductDetails = () => {
   };
 
   const changeMainImage = (index) => {
-   setImgnum(index)
+    setImgnum(index);
   };
 
   const handleQuantityChange = (value) => {
     setSelectedQuantity(value);
   };
+  const handleQuantityPrice = (value, price) => {
+    setSelectedQuantity(value), setProductNewPrice(price);
+  };
 
-  const handleAddCart = async () => {
+  const handleAddCart = async ( productId,
+    productName,
+    productSlug,
+    productDescription,
+    productFeature,
+    productPrice,
+    productDiscount,
+    quantity,
+    pricedata
+    ) => {
+     
     try {
-      const cartString = await AsyncStorage.getItem('@cart');
+      if (!productId || !productName || !productPrice || !quantity || !pricedata) {
+        Alert.alert("Invalid product data");
+        return;
+      }
+      const cartString = await AsyncStorage.getItem("@cart");
       const cart = cartString ? JSON.parse(cartString) : [];
       const selectedProduct = {
         productId,
@@ -160,47 +192,61 @@ const ProductDetails = () => {
         productFeature,
         productPrice,
         productDiscount,
-        Quantity: selectedQuantity,
-        pricedata,
+        quantity,
+        pricedata
       };
 
       const updatedCart = [...cart, selectedProduct];
-      await AsyncStorage.setItem('@cart', JSON.stringify(updatedCart));
+      await AsyncStorage.setItem("@cart", JSON.stringify(updatedCart));
 
-      console.log('Item added to cart successfully!');
-      Alert.alert('Item Added to cart');
+      console.log("Item added to cart successfully!");
+      Alert.alert(`${productName} added to cart successfully!`, "", [
+        { text: "OK", style: "default" },
+      ]);      
       setCartAddedMap((prevMap) => ({
         ...prevMap,
         [productId]: true,
       }));
-      router.push('(home)');
+      router.push("cart");
     } catch (error) {
-      console.error('Error adding item to cart:', error);
+      console.error("Error adding item to cart:", error);
     }
   };
   // console.log("pricedata", pricedata);
+
   return (
     <>
       <ScrollView>
         <View style={{ margin: 16 }}>
-          <View style={{ alignItems: 'center' }}>
+          <View style={{ alignItems: "center" }}>
             <Image
-              source={{ uri: `data:${productPhotos[0]?.contentType};base64,${productPhotos[imgnum]?.data}` }}
+              source={{
+                uri: `data:${productPhotos[0]?.contentType};base64,${productPhotos[imgnum]?.data}`,
+              }}
               style={{ width: 300, height: 300 }}
               resizeMode="cover"
             />
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ flexDirection: "row" }}
+          >
             {productPhotos.map((photo, index) => (
-              <TouchableOpacity key={index} onPress={() => changeMainImage(index)}>
+              <TouchableOpacity
+                key={index}
+                onPress={() => changeMainImage(index)}
+              >
                 <Image
-                  source={{ uri: `data:${photo.contentType};base64,${photo?.data}` }}
+                  source={{
+                    uri: `data:${photo.contentType};base64,${photo?.data}`,
+                  }}
                   style={{ width: 60, height: 60, margin: 4 }}
                   resizeMode="cover"
                 />
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
         </View>
 
         <View style={styles.productContainer}>
@@ -210,48 +256,138 @@ const ProductDetails = () => {
               <Text style={styles.productDetails}>{productDescription}</Text>
             </View>
             <View style={styles.detailRow}>
-              <Text style={{ color: "gray", textDecorationLine: "line-through" }}>
-                {Math.floor(productPrice * (100 / (100 - productDiscount)))}
+              <Text
+                style={{ color: "gray", textDecorationLine: "line-through" }}
+              >
+                {Math.floor(productNewPrice * (100 / (100 - productDiscount)))}
               </Text>
-              <Text style={styles.Price}>&#x20B9; {productPrice}</Text>
+              <Text style={styles.Price}>&#x20B9; {productNewPrice}</Text>
             </View>
             <View style={styles.detailRow}>
-              <Text style={styles.detailValue}>{productDiscount ? productDiscount : "0"}% OFF</Text>
+              <Text style={styles.detailValue}>
+                {productDiscount ? productDiscount : "0"}% OFF
+              </Text>
             </View>
-            <View >
+            <View>
+              <Text>Available values</Text>
+              <View
+                style={{
+                  borderColor: "gray",
+                  borderWidth: 1,
+                  borderRadius: 20,
+                  width: "100%",
+                  overflow: "hidden",
+                }}
+              >
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    // paddingVertical: 10,
+                    backgroundColor: "gray",
+                  }}
+                >
+                  {siPi.map((item, index) => (
+                    <TouchableOpacity
+                      style={{
+                        flexDirection: "column",
+                        alignItems: "center",
+                        padding: 10,
+                        marginHorizontal: 5,
+                        backgroundColor: "white",
+                      }}
+                      key={`${item.quantity}-${index}`}
+                      onPress={() =>
+                        handleQuantityPrice(item.quantity, item.price)
+                      }
+                    >
+                      <Text
+                        style={{
+                          color: "black",
+                          fontWeight: "900",
+                          marginBottom: 5,
+                        }}
+                      >
+                        {item.quantity}
+                      </Text>
+                      <Text style={styles.Price}>&#x20B9; {item.price}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              <Text>Selected value: {selectedQuantity}</Text>
+            </View>
+          </ScrollView>
+
+          {/*  TODO implement this logic
+          <View>
               <Text>Available quantities</Text>
-              <Picker  style={{color:"red",  backgroundColor:"gray"}}
+              <Text
+                style={{ color: "red", backgroundColor: "gray" }}
                 selectedValue={selectedQuantity}
                 onValueChange={(itemValue) => handleQuantityChange(itemValue)}
               >
-                <Picker.Item style={{color:"red", backgroundColor:"blue", height:300}} label="Please select an option" value={pricedata} />
-                {pricedata && siPi?.map((item, index) => (
-                  <Picker.Item style={{color:"red" , backgroundColor:"green"}} key={index} label={item.quantity} value={item.price} /> // TODO data nor vshoww in app
+                <View> <Text>
+                  Please select an option {value=null}
+                  </Text>
+                  </View>
+                {siPi.map((item, index) => (
+                  <TouchableOpacity  style={{
+                    color: "red",
+                    backgroundColor: "white",
+                    borderRadius: 5,
+                    padding: 10,
+                    height:200
+                  }}
+                    key={index}
+                    >
+
+                      <Text>{item.quantity}</Text>
+                      <Text>{item.price}</Text>
+                    </TouchableOpacity>
+                    
+                    
+                  
                 ))}
-              </Picker>
-              <Text >Selected quantity: {selectedQuantity}</Text>
-            </View>
-          </ScrollView>
+              </Text>
+
+              <Text>Selected quantity: {selectedQuantity}</Text>
+            </View> */}
 
           <Pressable
             style={{
               padding: 10,
-              backgroundColor:"white",
+              backgroundColor: "white",
               borderWidth: 0.5,
-              borderColor:  "blue",
+              borderColor: "blue",
               borderRadius: 5,
               width: "80%",
               marginHorizontal: "10%",
-              marginBottom: 20,
+              marginBottom: 0,
             }}
-            onPress={handleAddCart}
-            
+            onPress={() =>
+              handleAddCart(
+                productId?.productId,
+                productName,
+                productSlug,
+                productDescription,
+                productFeature,
+                productPrice,
+                productDiscount,
+                1,
+                pricedata
+              )
+            }
           >
-            <Text style={{ textAlign: "center", color:"blue", fontWeight: "bold" }}>
-           Add to cart
+            <Text
+              style={{ textAlign: "center", color: "blue", fontWeight: "bold" }}
+            >
+              Add to cart
             </Text>
           </Pressable>
-
         </View>
 
         {/* <View style={{ margin: 16 }}>
@@ -287,21 +423,20 @@ const ProductDetails = () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     margin: 16,
   },
   mainImage: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   mainImageStyle: {
     width: 300,
     height: 300,
   },
   thumbnailContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
   },
   thumbnailImage: {
     width: 60,
@@ -311,46 +446,47 @@ const styles = StyleSheet.create({
   productContainer: {
     marginTop: 16,
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 5,
     borderWidth: 0.5,
-    borderColor: 'blue',
-    width: '80%',
-    marginHorizontal: '10%',
-    marginBottom: 20,
-    height: 250
+    borderColor: "blue",
+    width: "80%",
+    marginHorizontal: "10%",
+    marginBottom: 80,
+    height: 400,
   },
   productDetailsContainer: {
     flex: 1,
   },
   productName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
   },
   productDescription: {
     marginBottom: 8,
   },
   detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 8,
   },
   Price: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
+    color: "green",
   },
   detailValue: {
     fontSize: 16,
-    color: 'green',
+    color: "green",
   },
   quantityPickerContainer: {
     marginVertical: 8,
   },
   quantityPicker: {
     height: 40,
-    width: '100%',
-    borderColor: 'gray',
+    width: "100%",
+    borderColor: "gray",
     borderWidth: 1,
     borderRadius: 5,
   },
@@ -360,48 +496,54 @@ const styles = StyleSheet.create({
   },
   addToCartButton: {
     padding: 10,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderWidth: 0.5,
-    borderColor: 'blue',
+    borderColor: "blue",
     borderRadius: 5,
-    width: '80%',
-    marginHorizontal: '10%',
-    marginBottom: 20,
+    width: "80%",
+    marginHorizontal: "10%",
+    marginBottom: 0,
   },
   addToCartButtonText: {
-    textAlign: 'center',
-    color: 'blue',
-    fontWeight: 'bold',
+    textAlign: "center",
+    color: "blue",
+    fontWeight: "bold",
   },
   similarProductsContainer: {
     margin: 16,
   },
   similarProductsHeader: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   noSimilarProductsText: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   similarProductItem: {
-    width: '33%',
+    width: "33%",
   },
   similarProductImage: {
-    width: '100%',
+    width: "100%",
     height: 150,
   },
   similarProductPriceContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   similarProductPrice: {
     fontSize: 16,
   },
   discountedPrice: {
-    textDecorationLine: 'line-through',
-    color: 'red',
+    textDecorationLine: "line-through",
+    color: "red",
+  },
+  dropdown: {
+    height: 50,
+    borderColor: "gray",
+    borderWidth: 0.5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
   },
 });
-
 
 export default ProductDetails;

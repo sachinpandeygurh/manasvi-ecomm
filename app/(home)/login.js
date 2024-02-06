@@ -17,7 +17,7 @@ export default function login() {
 
           <ScrollView style={{ zIndex: 1, marginVertical: 80 }}>
             <Login />
-            <CheckData/>
+            {/* <CheckData/> */}
           </ScrollView>
 
           <Footer />

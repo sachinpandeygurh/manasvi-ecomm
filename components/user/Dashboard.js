@@ -30,7 +30,7 @@ const Dashboard = () => {
     <View style={styles.container}>
       <View style={styles.column}>
         <View style={{ padding: 20 }}>
-          <Text style={{ fontWeight: 'bold' }}>About You</Text>
+          <Text style={{ fontWeight: 'bold' , fontSize:20}}>About {auth?.user?.name}</Text>
         </View>
 
         <View style={styles.mainContent}>

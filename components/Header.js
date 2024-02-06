@@ -1,26 +1,36 @@
-import React, { Component } from "react";
-import { Text, StyleSheet, View, Image, TextInput } from "react-native";
-import { EvilIcons, Feather } from '@expo/vector-icons';
+import React from "react";
+import { StyleSheet, View, Image, TextInput, Pressable, Text } from "react-native";
+import { EvilIcons, Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
-export default class Header extends Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <View style={styles.logoContainer}>
-            <Image style={styles.logo} source={require("../img/c_logo.png")} />
-            
-          </View>
-          <View style={styles.searchContainer}>
-            <EvilIcons name="search" size={24} color="black" />
-            <TextInput style={styles.searchInput} placeholder="Search..." />
-            <Feather name="mic" size={24} color="black" />
-          </View>
-        </View>
+export default function Header() {
+  const router = useRouter();
+
+  const handleHomePress = () => {
+    router.push("(home)");
+  };
+
+  const handleSearchPress = () => {
+    router.push("searchScreen");
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Pressable onPress={handleHomePress} style={styles.logoContainer}>
+          <Image style={styles.logo} source={require("../img/c_logo.png")} />
+        </Pressable>
+        <Pressable onPress={handleSearchPress} style={styles.searchContainer}>
+          <EvilIcons  name="search" size={24} color="black" />
+          <Text style={styles.searchInput} >Search...</Text>
+          {/* <TextInput style={styles.searchInput} placeholder="Search..." /> */}
+          <Feather name="mic" size={24} color="black" />
+        </Pressable>
       </View>
-    );
-  }
+    </View>
+  );
 }
+
 
 const styles = StyleSheet.create({
   container: {

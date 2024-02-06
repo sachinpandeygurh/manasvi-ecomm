@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, StyleSheet, View, TouchableOpacity, Alert } from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity, Alert, Reload } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import { AntDesign, Feather, EvilIcons, FontAwesome5 } from "@expo/vector-icons";
@@ -7,9 +7,9 @@ import { AntDesign, Feather, EvilIcons, FontAwesome5 } from "@expo/vector-icons"
 const Footer = () => {
   const router = useRouter();
   const [auth, setAuth] = useState(null);
+  const [cartArray, setCartArray] = useState([]);
   const [cartSize, setCartSize] = useState(0);
-  const [cartArray, setCartArray] = useState([])
-
+  
   const retrieveData = async () => {
     try {
       const value = await AsyncStorage.getItem('@MySuperStore:key');
@@ -21,29 +21,64 @@ const Footer = () => {
       console.error(error);
     }
   };
-
-
+  
   const retrieveCart = async () => {
     try {
-      const storedValue = await AsyncStorage.getItem('@cart') 
-      // console.log("storedValue", storedValue);
-      setCartArray(storedValue)
+      const storedValue = await AsyncStorage.getItem('@cart');
       if (storedValue !== null) {
-        const cartData = storedValue ? JSON.parse(storedValue) : [];
+        const cartData = JSON.parse(storedValue);
+        const updatedCartWithoutEmpty = cartData.filter((item) => Object.keys(item).length !== 0);
+  
         setCartSize(cartData.length);
+        setCartArray(updatedCartWithoutEmpty);
+      } else {
+        setCartSize(0);
+        setCartArray([]);
       }
     } catch (error) {
       console.log(error);
     }
   };
-console.log("cartSize", cartSize);
+  
+  const removetocart = async () => {
+    try {
+      const storedValue = await AsyncStorage.getItem('@cart');
+      const cartData = storedValue ? JSON.parse(storedValue) : [];
+  
+      const uniqueProductIds = [];
+      const filteredCart = cartData.filter((item) => {
+        if (Object.keys(item).length !== 0) {
+          if (!uniqueProductIds.includes(item.productId)) {
+            uniqueProductIds.push(item.productId);
+            return true; // Include the first occurrence of each product ID
+          }
+        }
+        return false; // Exclude non-duplicate items
+      });
+  
+      await AsyncStorage.setItem('@cart', JSON.stringify(filteredCart));
+      // console.log("filteredCart", filteredCart);
+  
+      if (filteredCart.length === 0) {
+        await AsyncStorage.removeItem('@cart');
+      }
+  
+      retrieveCart();
+    } catch (error) {
+      console.error('Error removing duplicate items:', error);
+    }
+  };
+  
+  
   useEffect(() => {
+    removetocart();
     retrieveData();
     retrieveCart();
-  }, [auth?.user, cartArray]);
-
+  }, [cartArray]);
+  
   const handleHome = () => {
     router.push('(home)');
+    // Reload.reload();
   };
 
   const handleCategory = () => {
@@ -53,20 +88,15 @@ console.log("cartSize", cartSize);
   const handleNotifications = () => {
     router.push('notifications');
   };
+// console.log("auth", auth); // auth {"message": "login successfully", "success": true, "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWI3NGI0YzJkZjRiZDI0ODE4OTE2YjEiLCJpYXQiOjE3MDcwODEyNDgsImV4cCI6MTcwNzY4NjA0OH0.iwkVBsZuw0uh2fwX4vnf30XzKKsqlmogb9opdTTZCsA", "user": {"_id": "65b74b4c2df4bd24818916b1", "address": "panchsheel nagar", "alternate_phone": "9200549668", "city_district_town": "bhopal", "email": "sachinmernstack@gmail.com", "landmark": "mata mandir", "locality": "bhopal", "name": "Sachin", "phone": "8319697083", "pincode": "461999", "role": 0, "shipping_address": "366 bhopal mp"}}
+const handleAccount = () => {
+  if (auth === null || auth?.user === undefined || auth?.user === null) {
+    router.push('login');
+  } else {
+    router.push('account');
+  }
+};
 
-  const handleAccount = () => {
-    if (auth?.user?.role === 0) {
-      Alert.alert(
-        "Unauthorized",
-        "Sorry, you are not authorized to log in. Please download the Manasvi admin app or visit the Manasvi Ecomm website."
-      );
-      router.push('(home)');
-    } else if (auth?.user === null) {
-      router.push('login');
-    } else {
-      router.push('account');
-    }
-  };
 
   const handleCart = () => {
     router.push('cart');

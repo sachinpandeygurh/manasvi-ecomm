@@ -17,12 +17,14 @@ import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 import * as Location from "expo-location";
 
 const LocationComponent = ({ navigation }) => {
-  const [displayCurrentAddress, setDisplayCurrentAddress] = useState(
-    "We are loading your location"
-  );
+  const [displayCurrentAddress, setDisplayCurrentAddress] =
+    useState( "We are loading your location");
   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [userInput, setUserInput] = useState("");
+  const [maplocation, SetMaplocation] = useState(
+    "We are loading your location"
+  );
 
   useEffect(() => {
     checkIfLocationEnabled();
@@ -69,7 +71,7 @@ const LocationComponent = ({ navigation }) => {
     }
 
     const { coords } = await Location.getCurrentPositionAsync();
-// console.log(coords);
+    // console.log(coords);
     if (coords) {
       const { latitude, longitude } = coords;
 
@@ -77,17 +79,19 @@ const LocationComponent = ({ navigation }) => {
         latitude,
         longitude,
       });
-    //   console.log(response);
+      //   console.log(response);
       for (let item of response) {
         let address = `${item.name} ${item.city}  ${item.postalCode}`;
-        setDisplayCurrentAddress(address);
-        console.log(address);
+        // console.log(address);
+        SetMaplocation(address);
       }
     }
   };
 
-  const hangleLocation = () => {
+  const hangleLocation = (address) => {
     getCurrentLocation();
+    setDisplayCurrentAddress(address);
+    setIsVisible(false);
   };
 
   const handleLocationModal = () => {
@@ -99,25 +103,31 @@ const LocationComponent = ({ navigation }) => {
   };
 
   const locationModel = () => (
-    <Modal isVisible={isVisible} onBackdropPress={hideModal}>
+    <ScrollView isVisible={isVisible} onBackdropPress={hideModal}>
       <SafeAreaView>
         <KeyboardAvoidingView behavior="position">
           <ScrollView keyboardShouldPersistTaps="handled">
-            <View>
-              <TouchableOpacity activeOpacity={0.8} onPress={hideModal}>
-                <AntDesign name="close" size={24} color="black" />
-              </TouchableOpacity>
-              <TextInput
+            <View  style={{flexDirection:"row", alignItems:"center", justifyContent:"space-between"}}>
+            
+              <TextInput style={{width:100}}
                 placeholder="address"
                 value={userInput}
                 onChangeText={(text) => setUserInput(text)}
               />
-              <Button title="Submit" onPress={hangleLocation} />
+                <TouchableOpacity style={{marginHorizontal:30}} activeOpacity={0.8} onPress={hideModal}>
+                <AntDesign name="close" size={24} color="black" />
+              </TouchableOpacity>
+              <Button
+                title="Submit"
+                onPress={() => hangleLocation(userInput)}
+              />
             </View>
+            
           </ScrollView>
+          
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </Modal>
+    </ScrollView>
   );
 
   return (
@@ -125,10 +135,9 @@ const LocationComponent = ({ navigation }) => {
       style={{
         flexDirection: "row",
         alignItems: "center",
-        justifyContent:"center",
+        justifyContent: "center",
         padding: 10,
-        
-    backgroundColor: 'rgba(255, 255, 255, 0.8)' ,
+        backgroundColor: "rgba(255, 255, 255, 0.8)",
         width: "100%",
         borderRadius: 10,
       }}
@@ -149,6 +158,7 @@ const LocationComponent = ({ navigation }) => {
             </Pressable>
           )}
         </Text>
+      {isVisible && locationModel()}
       </View>
       <Pressable
         onPress={handleLocationModal}
@@ -165,7 +175,6 @@ const LocationComponent = ({ navigation }) => {
           Change
         </Text>
       </Pressable>
-      {isVisible && locationModel()}
     </View>
   );
 };
