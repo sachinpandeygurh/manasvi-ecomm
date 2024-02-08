@@ -120,7 +120,7 @@ const Cart = () => {
   const loadRazorpay = async () => {
     try {
       const result = await fetch(
-        "https://dmart.onrender.com/api/v1/payment/create-order",
+        "https://manasvimart.in/api/v1/payment/create-order",
         {
           method: "POST",
           headers: {
@@ -137,7 +137,7 @@ const Cart = () => {
       const { amount, id: order_id, currency } = data;
 
       const razorpayKeyResult = await fetch(
-        "https://dmart.onrender.com/api/v1/payment/get-razorpay-key"
+        "https://manasvimart.in/api/v1/payment/get-razorpay-key"
       );
       const razorpayKeyData = await razorpayKeyResult.json();
       const razorpayKey = razorpayKeyData.data.key;
@@ -160,7 +160,7 @@ const Cart = () => {
       RazorpayCheckout.open(options)
         .then(async (response) => {
           // Handle success
-          await fetch("https://dmart.onrender.com/api/v1/payment/pay-order", {
+          await fetch("https://manasvimart.in/api/v1/payment/pay-order", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -194,7 +194,7 @@ const Cart = () => {
   const fetchData = async () => {
     try {
       const { data } = await axios.get(
-        `https://dmart.onrender.com/api/v1/product/get-product/${products}`
+        `https://manasvimart.in/api/v1/product/get-product/${products}`
       );
       setProducts(data?.product);
       // getProductAllPhoto(data?.product?._id);
@@ -400,7 +400,7 @@ const Cart = () => {
               <View style={styles.imageContainer}>
                 <Image
                   source={{
-                    uri: `https://dmart.onrender.com/api/v1/product/product-photo/${p.productId}`,
+                    uri: `https://manasvimart.in/api/v1/product/product-photo/${p.productId}`,
                   }}
                   style={styles.image}
                   resizeMode="cover"

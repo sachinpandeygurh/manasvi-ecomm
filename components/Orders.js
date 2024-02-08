@@ -47,7 +47,7 @@ const Orders = () => {
       localStorage.removeItem("OTP");
       setVerified(true);
       showToast("OTP verified Successfully!");
-      await axios.post("https://dmart.onrender.com/api/v1/payment/create-order-COD", {
+      await axios.post("https://manasvimart.in/api/v1/payment/create-order-COD", {
         isPaid: true,
         paymentMode: false,
         amount: parsedValue,

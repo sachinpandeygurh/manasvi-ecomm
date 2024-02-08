@@ -12,7 +12,7 @@ const Login = () => {
   // form function
   const handleSubmit = async () => {
     try {
-      const res = await axios.post("https://dmart.onrender.com/api/v1/auth/login", {
+      const res = await axios.post("https://manasvimart.in/api/v1/auth/login", {
         email,
         password,
       });
@@ -24,7 +24,7 @@ const Login = () => {
 
         // Fetch user data and cart items
         const userData = await axios.get(
-          `https://dmart.onrender.com/api/v1/cart/get-cart-item/${res.data.user._id}`,
+          `https://manasvimart.in/api/v1/cart/get-cart-item/${res.data.user._id}`,
           {
             headers: {
               Authorization: `${res.data.token}`,
@@ -88,7 +88,7 @@ const Login = () => {
           <Text>New Customer? </Text>
           <Text style={styles.linkText}>Sign Up</Text>
         </TouchableOpacity>
-
+<Text></Text>
         <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
           <Text style={styles.forgotPassword}>Forgot Password</Text>
         </TouchableOpacity>

@@ -12,7 +12,7 @@ const Orders = () => {
 
   const getOrders = async () => {
     try {
-      const { data } = await axios.get('https://dmart.onrender.com/api/v1/auth/all-orders');
+      const { data } = await axios.get('https://manasvimart.in/api/v1/auth/all-orders');
       setOrders(data);
       console.log(data, 'orders');
     } catch (error) {
@@ -39,7 +39,7 @@ const Orders = () => {
 
   const handleChange = async (orderId, value) => {
     try {
-      await axios.put(`https://dmart.onrender.com/api/v1/auth/order-status/${orderId}`, {
+      await axios.put(`https://manasvimart.in/api/v1/auth/order-status/${orderId}`, {
         status: value,
       });
       getOrders();
@@ -63,7 +63,7 @@ const Orders = () => {
             <Text>{o?.isPaid?.true ? 'Failed' : 'Success'}</Text>
             <Text>{o?.paymentMode ? 'Online' : 'Cash'}</Text>
             <Text>{o?.products?.length} Items</Text>
-            <Link to={`https://dmart.onrender.com/dashboard/admin/allInvoice?orderId=${o?.razorpay?.orderId}`}>
+            <Link to={`https://manasvimart.in/dashboard/admin/allInvoice?orderId=${o?.razorpay?.orderId}`}>
               {/* <FaFileInvoiceDollar /> */}
             </Link>
           </View>

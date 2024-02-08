@@ -34,7 +34,7 @@ const Grocery = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `https://dmart.onrender.com/api/v1/product/product-list/${page}`
+        `https://manasvimart.in/api/v1/product/product-list/${page}`
       );
       setLoading(false);
       setProducts(data.products);
@@ -47,7 +47,7 @@ const Grocery = () => {
   const filterProduct = async () => {
     try {
       const { data } = await axios.post(
-        "https://dmart.onrender.com/api/v1/product/product-filters",
+        "https://manasvimart.in/api/v1/product/product-filters",
         {
           checked: ["65ae300c70cae3e36c6014d9"],
           radio:[],
@@ -74,7 +74,7 @@ const Grocery = () => {
   const getTotal = async () => {
     try {
       const { data } = await axios.get(
-        "https://dmart.onrender.com/api/v1/product/product-count"
+        "https://manasvimart.in/api/v1/product/product-count"
       );
       setTotal(data?.total);
     } catch (error) {
@@ -85,7 +85,7 @@ const Grocery = () => {
   const getAllCategory = async () => {
     try {
       const { data } = await axios.get(
-        "https://dmart.onrender.com/api/v1/category/get-category"
+        "https://manasvimart.in/api/v1/category/get-category"
       );
       if (data?.success) {
         setCategories(data?.category);
@@ -97,7 +97,7 @@ const Grocery = () => {
   const getAllSubCategory = async () => {
     try {
       const { data } = await axios.get(
-        "https://dmart.onrender.com/api/v1/subcategory/get-sub-category"
+        "https://manasvimart.in/api/v1/subcategory/get-sub-category"
       );
       if (data?.success) {
         console.log(data);
@@ -114,7 +114,7 @@ const Grocery = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `https://dmart.onrender.com/api/v1/product/product-list/${page}`
+        `https://manasvimart.in/api/v1/product/product-list/${page}`
       );
       setLoading(false);
       // setProducts([...products, ...data?.products]);
@@ -265,7 +265,7 @@ const Grocery = () => {
                 <View style={styles.imageContainer}>
                   <Image
                     source={{
-                      uri: `https://dmart.onrender.com/api/v1/product/product-photo/${p._id}`, // TODO if not image hit api again
+                      uri: `https://manasvimart.in/api/v1/product/product-photo/${p._id}`, // TODO if not image hit api again
                     }}
                     style={styles.image}
                     resizeMode="cover"

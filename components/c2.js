@@ -87,7 +87,7 @@ const Cart = () => {
           {/* ... Your existing product UI */}
           <Image
         source={{
-          uri: `https://dmart.onrender.com/api/v1/product/product-photo/${p.product_id}`,
+          uri: `https://manasvimart.in/api/v1/product/product-photo/${p.product_id}`,
         }}
         style={styles.image}
         resizeMode="cover"
@@ -361,7 +361,7 @@ const Cart = () => {
     script.onload = async () => {
       try {
         setLoading(true);
-        const result = await axios.post("https://dmart.onrender.com/api/v1/payment/create-order", {
+        const result = await axios.post("https://manasvimart.in/api/v1/payment/create-order", {
           cart,
           amount: parsedValue * 100,
         });
@@ -379,7 +379,7 @@ const Cart = () => {
           description: "transction to manasvi",
           order_id: order_id,
           handler: async function (response) {
-            await axios.post("https://dmart.onrender.com/api/v1/payment/pay-order", {
+            await axios.post("https://manasvimart.in/api/v1/payment/pay-order", {
               paymentMode: true,
               amount: amount,
               products: cart,
@@ -507,7 +507,7 @@ const Cart = () => {
 
 
   // rager pay
-    // const result = await fetch("https://dmart.onrender.com/api/v1/payment/create-order", {
+    // const result = await fetch("https://manasvimart.in/api/v1/payment/create-order", {
       //   method: 'POST',
       //   headers: {
       //     'Content-Type': 'application/json',
@@ -520,7 +520,7 @@ const Cart = () => {
 
     //   const resultData = await result.json();
     //   const { amount, id: order_id, currency } = resultData;
-    //   const razorpayKeyResult = await fetch("https://dmart.onrender.com/api/v1/payment/get-razorpay-key");
+    //   const razorpayKeyResult = await fetch("https://manasvimart.in/api/v1/payment/get-razorpay-key");
     //   const razorpayKeyData = await razorpayKeyResult.json();
     //   const { key: razorpayKey } = razorpayKeyData;
 
@@ -532,7 +532,7 @@ const Cart = () => {
     //     description: "transaction to manasvi",
     //     order_id: order_id,
     //     handler: async function (response) {
-    //       await fetch("https://dmart.onrender.com/api/v1/payment/pay-order", {
+    //       await fetch("https://manasvimart.in/api/v1/payment/pay-order", {
     //         method: 'POST',
     //         headers: {
     //           'Content-Type': 'application/json',
@@ -591,7 +591,7 @@ const Cart = () => {
 //   const getSubCat = async () => {
 //     try {
 //       const { data } = await axios.get(
-//         `https://dmart.onrender.com/api/v1/subcategory/get-sub-category/65ae2f6470cae3e36c601489`
+//         `https://manasvimart.in/api/v1/subcategory/get-sub-category/65ae2f6470cae3e36c601489`
 //       );
 //       setCategory(data.data);
 //     } catch (error) {
@@ -615,7 +615,7 @@ const Cart = () => {
 //       <View key={item.id} style={styles.card}>
 //          <Image
 //               style={styles.img}
-//               source={{ uri: `https://dmart.onrender.com/api/v1/bcategory/single-photo/65ae2e8070cae3e36c601457` }}
+//               source={{ uri: `https://manasvimart.in/api/v1/bcategory/single-photo/65ae2e8070cae3e36c601457` }}
 //             />
 //         <Text style={styles.name}>{item.name}</Text>
 //       </View>

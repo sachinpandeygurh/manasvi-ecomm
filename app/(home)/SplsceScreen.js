@@ -10,7 +10,7 @@ export default function SplashScreen({ navigation }) {
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 1500,
+      duration: 2500,
       useNativeDriver: true,
     }).start(() => {
      
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#000", // Set your background color
+    backgroundColor: "#000",
   },
   logoContainer: {
     alignItems: "center",

@@ -66,7 +66,7 @@ const Profile = () => {
   // Form submission
   const handleSubmit = async () => {
     try {
-      const { data } = await Axios.put("https://dmart.onrender.com/api/v1/auth/profile", {
+      const { data } = await Axios.put("https://manasvimart.in/api/v1/auth/profile", {
         name,
         email,
         password,

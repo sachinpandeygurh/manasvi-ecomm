@@ -68,7 +68,7 @@ const ProductDetails = () => {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
-          `https://dmart.onrender.com/api/v1/product/get-product/${productId}`
+          `https://manasvimart.in/api/v1/product/get-product/${productId}`
         );
         setProduct(data);
         getSimilarProduct(data?.product?._id, data?.product?.category?._id);
@@ -133,7 +133,7 @@ const ProductDetails = () => {
     try {
       // console.log("productId2", productId);
       const { data } = await axios.get(
-        `https://dmart.onrender.com/api/v1/product/product-allphoto/${productId?.productId}`
+        `https://manasvimart.in/api/v1/product/product-allphoto/${productId?.productId}`
       );
       // console.log("data", data);
       if (data) {
@@ -147,7 +147,7 @@ const ProductDetails = () => {
   const getSimilarProduct = async () => {
     try {
       const { data } = await axios.get(
-        `https://dmart.onrender.com/api/v1/product/related-product/${productId}/${categoryId}`
+        `https://manasvimart.in/api/v1/product/related-product/${productId}/${categoryId}`
       );
       setRelatedProducts(data?.products);
     } catch (error) {
@@ -399,7 +399,7 @@ const ProductDetails = () => {
             {relatedProducts && relatedProducts?.map((p) => (
               <TouchableOpacity key={p._id} style={{ width: '33%' }} onPress={() => navigation.navigate(`/product/${p.slug}`)}>
                 <Image
-                  source={{ uri: `https://dmart.onrender.com/api/v1/product/product-photo/${p._id}` }}
+                  source={{ uri: `https://manasvimart.in/api/v1/product/product-photo/${p._id}` }}
                   style={{ width: '100%', height: 150 }}
                   resizeMode="cover"
                 />

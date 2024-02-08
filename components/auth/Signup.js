@@ -102,11 +102,11 @@ const Signup = () => {
       </Text>
 
       <Text>
-        <Text style={styles.linkText} onPress={() => Linking.openURL('https://dmart.onrender.com/policy')}>
+        <Text style={styles.linkText} onPress={() => Linking.openURL('https://manasvimart.in/policy')}>
           Terms of Use
         </Text>{' '}
         and{' '}
-        <Text style={styles.linkText} onPress={() => Linking.openURL('https://dmart.onrender.com/policy')}>
+        <Text style={styles.linkText} onPress={() => Linking.openURL('https://manasvimart.in/policy')}>
           Privacy Policy
         </Text>
         .

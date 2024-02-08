@@ -13,7 +13,7 @@ const Category = () => {
   const getAllCategory = async () => {
     try {
       const { data } = await axios.get(
-        "https://dmart.onrender.com/api/v1/bcategory/all"
+        "https://manasvimart.in/api/v1/bcategory/all"
       );
       if (data?.success) {
         setCategories(data?.data);
@@ -55,7 +55,7 @@ const Category = () => {
               <Image
                 style={styles.img}
                 source={{
-                  uri: `https://dmart.onrender.com/api/v1/bcategory/single-photo/${item._id}`,
+                  uri: `https://manasvimart.in/api/v1/bcategory/single-photo/${item._id}`,
                 }}
               />
               <Text style={styles.name}>{item.name}</Text>

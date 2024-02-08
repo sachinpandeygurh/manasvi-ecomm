@@ -31,17 +31,17 @@ export class Carusel extends Component {
         {
           title: 'Item 1',
           text: 'Text 1',
-          img: 'https://dmart.onrender.com/images/d1.jpg',
+          img: 'https://manasvimart.in/images/d1.jpg',
         },
         {
           title: 'Item 2',
           text: 'Text 2',
-          img: 'https://dmart.onrender.com/images/d2.jpg',
+          img: 'https://manasvimart.in/images/d2.jpg',
         },
         {
           title: 'Item 3',
           text: 'Text 3',
-          img: 'https://dmart.onrender.com/images/d3.jpg',
+          img: 'https://manasvimart.in/images/d3.jpg',
         },
       ],
     };

@@ -28,7 +28,7 @@ export default function SearchScreen() {
   const productdata = async () => {
     try {
       const result = await Axios.get(
-        `https://dmart.onrender.com/api/v1/product/search/${value}`
+        `https://manasvimart.in/api/v1/product/search/${value}`
       );
       setProducts(result?.data);
     } catch (error) {
@@ -198,7 +198,7 @@ export default function SearchScreen() {
                     <View style={styles.imageContainer}>
                       <Image
                         source={{
-                          uri: `https://dmart.onrender.com/api/v1/product/product-photo/${p._id}`, // TODO if not image hit api again
+                          uri: `https://manasvimart.in/api/v1/product/product-photo/${p._id}`, // TODO if not image hit api again
                         }}
                         style={styles.image}
                         resizeMode="cover"
