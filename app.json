@@ -4,10 +4,10 @@
     "slug": "manasvimart",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/img/c_logo.png",
+    "icon": "./assets/c_logo.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/img/c_logo.png",
+      "image": "./assets/c_logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
