@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "manasvi-ecommerce",
-    "slug": "manasvi-ecommerce",
+    "name": "manasvimart",
+    "slug": "manasvimart",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/manasvi.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/img/c_logo.png",
+    "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/manasvi.png",
+      "image": "./assets/img/c_logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
